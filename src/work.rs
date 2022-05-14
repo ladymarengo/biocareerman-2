@@ -63,7 +63,6 @@ fn spawn_word(
 	query: Query<Entity, With<Word>>,
 	asset_server: Res<AssetServer>
 ) {
-	println!("{}", query.iter().collect::<Vec<Entity>>().len());
 	if query.iter().collect::<Vec<Entity>>().len() == 0 {
 		commands
 		.spawn_bundle(TextBundle {
@@ -104,12 +103,12 @@ fn text_input(
 	mut char_evr: EventReader<ReceivedCharacter>,
 	keys: Res<Input<KeyCode>>,
 	mut string: Local<String>,
-	mut query: Query<(Entity, &mut Word)>,
+	mut query: Query<(Entity, &mut Word, &mut Text)>,
 	mut commands: Commands,
 ) {
 
 	if !query.is_empty() {
-		let (id, mut word) = query.single_mut();
+		let (id, mut word, mut text) = query.single_mut();
 
 		for ev in char_evr.iter() {
 			println!("Got char: '{}'", ev.char);
@@ -117,9 +116,11 @@ fn text_input(
 			if word.index < word.word.len() && ev.char != ' ' {
 				if word.word.as_bytes()[word.index] == ev.char as u8 {
 					println!("Yes!");
+					text.sections[word.index].style.color = Color::GREEN;
 				}
 				else {
 					println!("No.");
+					text.sections[word.index].style.color = Color::RED;
 				}
 				word.index += 1;
 				if word.index == word.word.len() {
