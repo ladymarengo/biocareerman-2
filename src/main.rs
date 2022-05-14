@@ -5,6 +5,7 @@ mod jobs_list;
 mod modes;
 mod work;
 mod ending;
+mod randomizer;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
