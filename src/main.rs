@@ -64,6 +64,7 @@ fn main() {
                 price: Vec::new(),
                 desc: Vec::new(),
                 humanness_impact: Vec::new(),
+				level: Vec::new(),
             },
         })
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))

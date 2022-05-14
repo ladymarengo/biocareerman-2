@@ -1,5 +1,6 @@
 use super::*;
 use crate::randomizer::get_random_word;
+use bevy::math::Rect;
 use bevy::prelude::*;
 use instant::Instant;
 
@@ -85,7 +86,13 @@ fn spawn_word(
         commands
             .spawn_bundle(TextBundle {
                 style: Style {
-                    align_self: AlignSelf::FlexEnd,
+                    align_self: AlignSelf::Center,
+                    margin: Rect {
+                        left: (Val::Auto),
+                        right: (Val::Auto),
+                        top: (Val::Auto),
+                        bottom: (Val::Auto),
+                    },
                     ..default()
                 },
                 text: Text {
@@ -190,9 +197,9 @@ fn finish_day(
 ) {
     if timer.0.elapsed().as_secs() > 10 {
         game_progress.day += 1;
-		match game_progress.day {
-			16 => app_state.set(AppState::Ending).unwrap(),
-			_ => app_state.set(AppState::Home).unwrap(),
-		}
+        match game_progress.day {
+            16 => app_state.set(AppState::Ending).unwrap(),
+            _ => app_state.set(AppState::Home).unwrap(),
+        }
     }
 }
