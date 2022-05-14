@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use super::*;
+use crate::hud::*;
 
 pub struct Ending;
 
@@ -12,6 +13,7 @@ impl Plugin for Ending {
         .add_system_set(
             SystemSet::on_enter(AppState::Ending)
                 .with_system(spawn_ending)
+				.with_system(hud::cleanup_hud)
         )
 		.add_system_set(
             SystemSet::on_update(AppState::Ending)
@@ -42,7 +44,7 @@ fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>) {
 
 fn ending_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)
 {
-	if keys.just_pressed(KeyCode::S) {
+	if keys.just_pressed(KeyCode::A) {
 		app_state.set(AppState::Start).unwrap();
 	}
 }
