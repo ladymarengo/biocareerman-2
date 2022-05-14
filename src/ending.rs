@@ -14,29 +14,37 @@ impl Plugin for Ending {
                 .with_system(spawn_ending)
         )
 		.add_system_set(
+            SystemSet::on_update(AppState::Ending)
+                .with_system(ending_input)
+        )
+		.add_system_set(
 			SystemSet::on_exit(AppState::Ending)
 				.with_system(cleanup_ending));
 		}
 	}
 
-fn spawn_ending(mut commands: Commands) {
-	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-	println!("Ending");
-
-    commands.spawn_bundle(SpriteBundle {
-		transform: Transform {
-			translation: Vec3::new(0.0, 0.0, 2.0),
-			..Default::default()
-		},
-        sprite: Sprite {
-            color: Color::rgb(0.0, 0.25, 1.0),
-            custom_size: Some(Vec2::new(50.0, 100.0)),
-            ..default()
-        },
-        ..default()
-    })
+fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>) {
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: assets.load("ending.png"),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(800.0, 600.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
 		.insert(EndingMarker);
+}
+
+fn ending_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)
+{
+	if keys.just_pressed(KeyCode::S) {
+		app_state.set(AppState::Start).unwrap();
+	}
 }
 
 fn cleanup_ending(mut commands: Commands, query: Query<Entity, With<EndingMarker>>) {
