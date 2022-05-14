@@ -6,6 +6,7 @@ mod modes;
 mod work;
 mod ending;
 mod randomizer;
+mod hud;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
@@ -15,6 +16,13 @@ pub enum AppState {
 	JobsList,
 	Work,
 	Ending
+}
+
+pub struct GameProgress {
+	money: usize,
+	humanness: usize,
+	day: usize,
+	max_days: usize
 }
 
 #[derive(Component)]
@@ -37,6 +45,7 @@ fn main() {
 		.add_plugin(work::Work)
 		.add_plugin(ending::Ending)
 		.add_system(bevy::input::system::exit_on_esc_system)
+		.insert_resource(GameProgress {money: 0, humanness: 100, day: 1, max_days: 20})
 		.add_system_set(
             SystemSet::on_enter(AppState::Start)
                 .with_system(spawn_start)
@@ -50,6 +59,7 @@ fn main() {
                 .with_system(cleanup_start)
         )
 		.add_system(change_state)
+		.add_system(hud::update_hud)
 		.run()
 }
 

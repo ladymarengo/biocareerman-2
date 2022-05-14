@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use super::*;
+use crate::hud::*;
 
 pub struct Ending;
 
@@ -12,6 +13,7 @@ impl Plugin for Ending {
         .add_system_set(
             SystemSet::on_enter(AppState::Ending)
                 .with_system(spawn_ending)
+				.with_system(hud::cleanup_hud)
         )
 		.add_system_set(
             SystemSet::on_update(AppState::Ending)
