@@ -20,14 +20,10 @@ impl Plugin for Work {
 				.with_system(spawn_work)
 				.with_system(spawn_word)
 		)
-		.add_system_set_to_stage(
-			CoreStage::PostUpdate,
-			SystemSet::on_update(AppState::Work)
-				.with_system(spawn_word)
-		)
 		.add_system_set(
 			SystemSet::on_update(AppState::Work)
-				.with_system(text_input)
+				.with_system(text_input.label("print"))
+				.with_system(spawn_word.after("print"))
 		)
 		.add_system_set(
 			SystemSet::on_exit(AppState::Work)
@@ -67,7 +63,7 @@ fn spawn_word(
 	query: Query<Entity, With<Word>>,
 	asset_server: Res<AssetServer>
 ) {
-	// println!("{}", query.iter().collect::<Vec<Entity>>().len());
+	println!("{}", query.iter().collect::<Vec<Entity>>().len());
 	if query.iter().collect::<Vec<Entity>>().len() == 0 {
 		commands
 		.spawn_bundle(TextBundle {
@@ -111,22 +107,25 @@ fn text_input(
 	mut query: Query<(Entity, &mut Word)>,
 	mut commands: Commands,
 ) {
-	let (id, mut word) = query.single_mut();
 
-	for ev in char_evr.iter() {
-		println!("Got char: '{}'", ev.char);
-		string.push(ev.char);
-		if word.index < word.word.len() && ev.char != ' ' {
-			if word.word.as_bytes()[word.index] == ev.char as u8 {
-				println!("Yes!");
-			}
-			else {
-				println!("No.");
-			}
-			word.index += 1;
-			if word.index == word.word.len() {
-				commands.entity(id).despawn();
-				return ;
+	if !query.is_empty() {
+		let (id, mut word) = query.single_mut();
+
+		for ev in char_evr.iter() {
+			println!("Got char: '{}'", ev.char);
+			string.push(ev.char);
+			if word.index < word.word.len() && ev.char != ' ' {
+				if word.word.as_bytes()[word.index] == ev.char as u8 {
+					println!("Yes!");
+				}
+				else {
+					println!("No.");
+				}
+				word.index += 1;
+				if word.index == word.word.len() {
+					commands.entity(id).despawn();
+					return ;
+				}
 			}
 		}
 	}
