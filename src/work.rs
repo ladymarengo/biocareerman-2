@@ -11,6 +11,7 @@ pub struct WorkMarker;
 struct Word {
     word: String,
     index: usize,
+    errors: usize,
 }
 
 impl Plugin for Work {
@@ -79,6 +80,7 @@ fn spawn_word(
             .insert(Word {
                 word: word,
                 index: 0,
+                errors: 0,
             })
             .insert(WorkMarker);
     }
@@ -102,7 +104,7 @@ fn vectorize_word(word: &str, asset_server: Res<AssetServer>) -> Vec<TextSection
 
 fn text_input(
     mut char_evr: EventReader<ReceivedCharacter>,
-    keys: Res<Input<KeyCode>>,
+    // keys: Res<Input<KeyCode>>,
     mut string: Local<String>,
     mut query: Query<(Entity, &mut Word, &mut Text)>,
     mut commands: Commands,
@@ -115,17 +117,28 @@ fn text_input(
             string.push(ev.char);
             if word.index < word.word.len()
                 && ev.char != ' '
-                && !(ev.char == 'w' && word.index == 0)
+                && !(ev.char == 'w' && word.index == 0 && word.word.chars().last().unwrap() != 'w')
             {
                 if word.word.as_bytes()[word.index] == ev.char as u8 {
                     println!("Yes!");
                     text.sections[word.index].style.color = Color::GREEN;
                 } else {
                     println!("No.");
+                    word.errors += 1;
                     text.sections[word.index].style.color = Color::RED;
                 }
                 word.index += 1;
                 if word.index == word.word.len() {
+                    if word.errors == 0 {
+                        println!("Perfect!");
+						println!("{}", word.index);
+                    } else if word.errors == 1 {
+                        println!("Imperfect.");
+                        println!("{}", word.index - word.errors);
+                    } else {
+                        println!("Unsatisfying!");
+						println!("0")
+                    }
                     commands.entity(id).despawn();
                     return;
                 }
@@ -133,8 +146,8 @@ fn text_input(
         }
     }
 
-    if keys.just_pressed(KeyCode::Return) {
-        println!("Text input: {}", *string);
-        string.clear();
-    }
+    // if keys.just_pressed(KeyCode::Return) {
+    //     println!("Text input: {}", *string);
+    //     string.clear();
+    // }
 }
