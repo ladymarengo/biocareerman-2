@@ -13,15 +13,21 @@ struct Word {
 }
 
 impl Plugin for Work {
-    fn build(&self, app: &mut App) {
-        app
-        .add_system_set(
-            SystemSet::on_enter(AppState::Work)
-                .with_system(spawn_work)
-        )
+	fn build(&self, app: &mut App) {
+		app
+		.add_system_set(
+			SystemSet::on_enter(AppState::Work)
+				.with_system(spawn_work)
+				.with_system(spawn_word)
+		)
+		.add_system_set_to_stage(
+			CoreStage::PostUpdate,
+			SystemSet::on_update(AppState::Work)
+				.with_system(spawn_word)
+		)
 		.add_system_set(
 			SystemSet::on_update(AppState::Work)
-                .with_system(spawn_word)
+				.with_system(text_input)
 		)
 		.add_system_set(
 			SystemSet::on_exit(AppState::Work)
@@ -35,25 +41,25 @@ fn spawn_work(mut commands: Commands) {
 
 	println!("Work");
 
-    commands.spawn_bundle(SpriteBundle {
+	commands.spawn_bundle(SpriteBundle {
 		transform: Transform {
 			translation: Vec3::new(0.0, 0.0, 2.0),
 			..Default::default()
 		},
-        sprite: Sprite {
-            color: Color::rgb(0.25, 0.0, 0.75),
-            custom_size: Some(Vec2::new(50.0, 100.0)),
-            ..default()
-        },
-        ..default()
-    })
+		sprite: Sprite {
+			color: Color::rgb(0.25, 0.0, 0.75),
+			custom_size: Some(Vec2::new(50.0, 100.0)),
+			..default()
+		},
+		..default()
+	})
 		.insert(WorkMarker);
 }
 
 fn cleanup_work(mut commands: Commands, query: Query<Entity, With<WorkMarker>>) {
-    for e in query.iter() {
-        commands.entity(e).despawn_recursive();
-    }
+	for e in query.iter() {
+		commands.entity(e).despawn_recursive();
+	}
 }
 
 fn spawn_word(
@@ -61,22 +67,21 @@ fn spawn_word(
 	query: Query<Entity, With<Word>>,
 	asset_server: Res<AssetServer>
 ) {
-	if query.is_empty() {
+	// println!("{}", query.iter().collect::<Vec<Entity>>().len());
+	if query.iter().collect::<Vec<Entity>>().len() == 0 {
 		commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                ..default()
-            },
-            // Use `Text` directly
-            text: Text {
-                // Construct a `Vec` of `TextSection`s
-                sections: vectorize_word("hello".to_string(), asset_server),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(Word{word: "hello".to_string(), index: 0})
+		.spawn_bundle(TextBundle {
+			style: Style {
+				align_self: AlignSelf::FlexEnd,
+				..default()
+			},
+			text: Text {
+				sections: vectorize_word("hello".to_string(), asset_server),
+				..default()
+			},
+			..default()
+		})
+		.insert(Word{word: "hello".to_string(), index: 0})
 		.insert(WorkMarker);
 	}
 }
@@ -97,4 +102,37 @@ fn vectorize_word(word: String, asset_server: Res<AssetServer>) -> Vec<TextSecti
 		)
 	}
 	sections
+}
+
+fn text_input(
+	mut char_evr: EventReader<ReceivedCharacter>,
+	keys: Res<Input<KeyCode>>,
+	mut string: Local<String>,
+	mut query: Query<(Entity, &mut Word)>,
+	mut commands: Commands,
+) {
+	let (id, mut word) = query.single_mut();
+
+	for ev in char_evr.iter() {
+		println!("Got char: '{}'", ev.char);
+		string.push(ev.char);
+		if word.index < word.word.len() && ev.char != ' ' {
+			if word.word.as_bytes()[word.index] == ev.char as u8 {
+				println!("Yes!");
+			}
+			else {
+				println!("No.");
+			}
+			word.index += 1;
+			if word.index == word.word.len() {
+				commands.entity(id).despawn();
+				return ;
+			}
+		}
+	}
+
+	if keys.just_pressed(KeyCode::Return) {
+		println!("Text input: {}", *string);
+		string.clear();
+	}
 }
