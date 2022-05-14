@@ -41,11 +41,11 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 		"It is a wonderful day to retire!".to_string(),
     ];
 
-	game_progress.library.letters = letters;
-	game_progress.library.min_len = min_len;
-	game_progress.library.max_len = max_len;
-	game_progress.library.news = news;
-	game_progress.money = 0;
+    game_progress.library.letters = letters;
+    game_progress.library.min_len = min_len;
+    game_progress.library.max_len = max_len;
+    game_progress.library.news = news;
+    game_progress.money = 0;
     game_progress.humanness = 100;
     game_progress.day = 1;
 }
@@ -55,4 +55,20 @@ pub struct Library {
     pub min_len: Vec<usize>,
     pub max_len: Vec<usize>,
     pub news: Vec<String>,
+}
+
+pub fn create_modes(mut game_progress: ResMut<GameProgress>) {
+    game_progress.modes = Modes {
+        price: vec![30, 300],
+        desc: vec!["Eagle Eye".to_string(), "Smiley".to_string()],
+        humanness_impact: vec![70, 30],
+        level: vec![0, 0],
+    };
+}
+
+pub struct Modes {
+    pub price: Vec<usize>,
+    pub desc: Vec<String>,
+    pub humanness_impact: Vec<usize>,
+    pub level: Vec<usize>,
 }

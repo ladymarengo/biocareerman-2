@@ -26,6 +26,7 @@ pub struct GameProgress {
     day: usize,
     max_days: usize,
     library: info::Library,
+	modes: info::Modes,
 }
 
 #[derive(Component)]
@@ -58,6 +59,11 @@ fn main() {
                 min_len: Vec::new(),
                 max_len: Vec::new(),
 				news: Vec::new(),
+            },
+			modes: info::Modes {
+                price: Vec::new(),
+                desc: Vec::new(),
+                humanness_impact: Vec::new(),
             },
         })
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
