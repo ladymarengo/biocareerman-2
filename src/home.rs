@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use super::*;
+use crate::hud::*;
 
 pub struct Home;
 
@@ -12,6 +13,7 @@ impl Plugin for Home {
         .add_system_set(
             SystemSet::on_enter(AppState::Home)
                 .with_system(spawn_home)
+				.with_system(hud::spawn_hud)
         )
 		.add_system_set(
             SystemSet::on_update(AppState::Home)
