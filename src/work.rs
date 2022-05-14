@@ -108,6 +108,7 @@ fn text_input(
     mut string: Local<String>,
     mut query: Query<(Entity, &mut Word, &mut Text)>,
     mut commands: Commands,
+	mut game_progress: ResMut<GameProgress>,
 ) {
     if !query.is_empty() {
         let (id, mut word, mut text) = query.single_mut();
@@ -131,10 +132,10 @@ fn text_input(
                 if word.index == word.word.len() {
                     if word.errors == 0 {
                         println!("Perfect!");
-						println!("{}", word.index);
+                        game_progress.money += word.index;
                     } else if word.errors == 1 {
                         println!("Imperfect.");
-                        println!("{}", word.index - word.errors);
+                        game_progress.money += word.index - 1;
                     } else {
                         println!("Unsatisfying!");
 						println!("0")
