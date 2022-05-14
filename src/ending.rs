@@ -44,7 +44,7 @@ fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>) {
 
 fn ending_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)
 {
-	if keys.just_pressed(KeyCode::S) {
+	if keys.just_pressed(KeyCode::A) {
 		app_state.set(AppState::Start).unwrap();
 	}
 }
