@@ -1,10 +1,11 @@
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 use super::*;
 use crate::randomizer::get_random_word;
 use bevy::math::Rect;
 use bevy::prelude::*;
 use instant::Instant;
+use rand::Rng;
 
 pub struct Work;
 
@@ -46,7 +47,13 @@ impl Plugin for Work {
     }
 }
 
-fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: Res<AssetServer>, load_assets: Res<LoadedAssets>) {
+fn spawn_work(
+    mut commands: Commands,
+    mut timer: ResMut<WorkDayTimer>,
+    assets: Res<AssetServer>,
+    load_assets: Res<LoadedAssets>,
+    game_progress: Res<GameProgress>,
+) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
     timer.0 = Instant::now();
@@ -68,7 +75,7 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
         })
         .insert(WorkMarker);
 
-	commands
+    commands
         .spawn_bundle(SpriteBundle {
             texture: load_assets.0.get("customer_bubble.png").unwrap().clone(),
             transform: Transform {
@@ -81,8 +88,35 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
             },
             ..Default::default()
         })
-		.insert(Bubble)
+        .insert(Bubble)
         .insert(WorkMarker);
+
+    let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
+    commands.spawn_bundle(TextBundle {
+        // transform: ,
+        style: Style {
+            align_self: AlignSelf::Center,
+            position: Rect {
+                top: Val::Px(HEIGHT / 2.0 - 200.0),
+                left: Val::Px(100.0),
+                ..Default::default()
+            },
+            ..default()
+        },
+        text: Text::with_section(
+            game_progress.customers[phrase_index].task.to_string(),
+            TextStyle {
+                font: assets.load("FiraMono-Medium.ttf"),
+                font_size: 23.0,
+                color: Color::BLACK,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Left,
+                ..default()
+            },
+        ),
+        ..default()
+    });
 }
 
 fn cleanup_work(mut commands: Commands, query: Query<Entity, With<WorkMarker>>) {
@@ -98,11 +132,16 @@ fn spawn_word(
     timer: Res<DelayTimer>,
     mut game_progress: ResMut<GameProgress>,
 ) {
-
-	let min_len = if game_progress.modes[3].1 {min(4, game_progress.library.min_len[game_progress.day - 1])} else {game_progress.library.min_len[game_progress.day - 1]};
-	let max_len = if game_progress.modes[3].1 {min(4, game_progress.library.max_len[game_progress.day - 1])} else {game_progress.library.max_len[game_progress.day - 1]};
-
-	
+    let min_len = if game_progress.modes[3].1 {
+        min(4, game_progress.library.min_len[game_progress.day - 1])
+    } else {
+        game_progress.library.min_len[game_progress.day - 1]
+    };
+    let max_len = if game_progress.modes[3].1 {
+        min(4, game_progress.library.max_len[game_progress.day - 1])
+    } else {
+        game_progress.library.max_len[game_progress.day - 1]
+    };
 
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
         let word = get_random_word(
@@ -115,10 +154,10 @@ fn spawn_word(
                 style: Style {
                     align_self: AlignSelf::Center,
                     position: Rect {
-						top: Val::Px(HEIGHT / 2.0 - 200.0),
-						left: Val::Px(WIDTH / 2.0),
-						..Default::default()
-					},
+                        top: Val::Px(HEIGHT / 2.0 - 200.0),
+                        left: Val::Px(WIDTH / 2.0),
+                        ..Default::default()
+                    },
                     ..default()
                 },
                 text: Text {
@@ -163,7 +202,7 @@ fn text_input(
     mut timer: ResMut<DelayTimer>,
     mut app_state: ResMut<State<AppState>>,
     workdaytimer: Res<WorkDayTimer>,
-	bubble: Query<Entity, With<Bubble>>,
+    bubble: Query<Entity, With<Bubble>>,
 ) {
     if !query.is_empty() {
         let (id, mut word, mut text) = query.single_mut();
@@ -178,7 +217,9 @@ fn text_input(
                 if word.index == 0 {
                     word.timer = Instant::now();
                 }
-                if word.word.as_bytes()[word.index] == ev.char as u8 || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char) {
+                if word.word.as_bytes()[word.index] == ev.char as u8
+                    || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char)
+                {
                     // println!("Yes!");
                     text.sections[word.index].style.color = Color::DARK_GREEN;
                 } else {
@@ -188,30 +229,33 @@ fn text_input(
                 }
                 word.index += 1;
 
-				let mode_offset: u128 = if game_progress.modes[1].1 {500} else {0};
+                let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
 
                 if word.index == word.word.len() {
-					// println!("{}, {}, {}, {}", word.timer.elapsed().as_millis(), mode_offset, word.errors, game_progress.modes[0].1 as usize);
+                    // println!("{}, {}, {}, {}", word.timer.elapsed().as_millis(), mode_offset, word.errors, game_progress.modes[0].1 as usize);
 
                     if word.errors <= 0 + game_progress.modes[0].1 as usize
-                        && word.timer.elapsed().as_millis() < word.word.len() as u128 * 300 - game_progress.day as u128 * 15 + mode_offset
+                        && word.timer.elapsed().as_millis()
+                            < word.word.len() as u128 * 300 - game_progress.day as u128 * 15
+                                + mode_offset
                     {
                         println!("Perfect!");
                         game_progress.money += word.index * word.word.len();
                     } else if word.errors > 1 + game_progress.modes[0].1 as usize
-                        || word.timer.elapsed().as_millis() > word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset
+                        || word.timer.elapsed().as_millis()
+                            > word.word.len() as u128 * 600 - game_progress.day as u128 * 30
+                                + mode_offset
                     {
-						println!("Unsatisfying!");
-                        
+                        println!("Unsatisfying!");
                     } else {
                         println!("Imperfect.");
                         game_progress.money += word.index;
                         // println!("0");
                     }
                     commands.entity(id).despawn();
-					// if !bubble.is_empty() {
-					// 	commands.entity(bubble.single()).despawn();
-					// }
+                    // if !bubble.is_empty() {
+                    // 	commands.entity(bubble.single()).despawn();
+                    // }
                     finish_day(game_progress, workdaytimer, app_state);
                     timer.0 = Instant::now();
                     return;
@@ -241,5 +285,6 @@ fn finish_day(
 }
 
 fn if_letter_locked(mut game_progress: &ResMut<GameProgress>, c: char) -> bool {
-	(game_progress.modes[2].1 && ("aeuioy".contains(c))) || (game_progress.modes[4].1 && ("qe".contains(c)))
+    (game_progress.modes[2].1 && ("aeuioy".contains(c)))
+        || (game_progress.modes[4].1 && ("qe".contains(c)))
 }

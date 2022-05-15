@@ -143,5 +143,5 @@ pub struct Mode {
 }
 
 pub struct CallCenterTask {
-	pub task: String;
+	pub task: String,
 }
