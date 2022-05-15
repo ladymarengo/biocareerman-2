@@ -85,6 +85,47 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 			desc: "Restores some of your humanness.".to_string(),
 			humanness_impact: 25,
 		}, false),];
+	game_progress.customers = vec![
+		CallCenterTask {
+			task: "I want refurbished parts for my ...".to_string(),
+		},
+		CallCenterTask {
+			task: "... is broken, could you fix it?".to_string(),
+		},
+		CallCenterTask {
+			task: "I would like to return ...".to_string(),
+		},
+		CallCenterTask {
+			task: "Help! Emergency! We need at least 10 ... here!".to_string(),
+		},
+		CallCenterTask {
+			task: "Flat Apple Factory needs fresh ... for R&D".to_string(),
+		},
+		CallCenterTask {
+			task: "Pizza one plz, plenty ...".to_string(),
+		},
+		CallCenterTask {
+			task: "Is this BiO Career Man on the phone?".to_string(),
+		},
+		CallCenterTask {
+			task: "Gyd morni. Vi fine virus. Egcexute dis fail.".to_string(),
+		},
+		CallCenterTask {
+			task: "It's your destiny calling. What do you reckon, recon?".to_string(),
+		},
+		CallCenterTask {
+			task: "My eagle-eye mod is broken. Can you bring me ...?".to_string(),
+		},
+		CallCenterTask {
+			task: "Where to check-in for the orbital flight?".to_string(),
+		},
+		CallCenterTask {
+			task: "One teleportation, please. Address is ...".to_string(),
+		},
+		CallCenterTask {
+			task: "Can you bring my organic nose, package id is ...".to_string(),
+		},
+	];
 }
 
 pub struct Library {
@@ -99,4 +140,8 @@ pub struct Mode {
     pub price: usize,
     pub desc: String,
     pub humanness_impact: i32,
+}
+
+pub struct CallCenterTask {
+	pub task: String;
 }

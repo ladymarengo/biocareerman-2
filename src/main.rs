@@ -30,6 +30,7 @@ pub struct GameProgress {
     max_days: usize,
     library: info::Library,
 	modes: Vec<(info::Mode, bool)>,
+	customers: Vec<info::CallCenterTask>,
 }
 
 #[derive(Component)]
