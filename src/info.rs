@@ -48,6 +48,43 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
     game_progress.money = 0;
     game_progress.humanness = 100;
     game_progress.day = 1;
+	game_progress.modes = vec![
+		Mode{
+			name: "Cyborg I".to_string(),
+			price: 200,
+			desc: "Eagle-eyed employee has a right for one error without a penalty.".to_string(),
+			humanness_impact: -10,
+		},
+		Mode{
+			name: "Smiley".to_string(),
+			price: 300,
+			desc: "Additional time for your tasks.".to_string(),
+			humanness_impact: -10,
+		},
+		Mode{
+			name: "Bcrrmn2".to_string(),
+			price: 500,
+			desc: "Type any button for a vowel.".to_string(),
+			humanness_impact: -40,
+		},
+		Mode{
+			name: "No Time To Type".to_string(),
+			price: 400,
+			desc: "Limit the length of your tasks.".to_string(),
+			humanness_impact: -30,
+		},
+		Mode{
+			name: "Writetyper's starterkit".to_string(),
+			price: 100,
+			desc: "Type any button for the letters 'q' and 'e'.".to_string(),
+			humanness_impact: -10,
+		},
+		Mode{
+			name: "Bot Remover 2000".to_string(),
+			price: 600,
+			desc: "Restores some of your humanness.".to_string(),
+			humanness_impact: 25,
+		},];
 }
 
 pub struct Library {
@@ -57,18 +94,9 @@ pub struct Library {
     pub news: Vec<String>,
 }
 
-pub fn create_modes(mut game_progress: ResMut<GameProgress>) {
-    game_progress.modes = Modes {
-        price: vec![30, 300],
-        desc: vec!["Eagle Eye".to_string(), "Smiley".to_string()],
-        humanness_impact: vec![70, 30],
-        level: vec![0, 0],
-    };
-}
-
-pub struct Modes {
-    pub price: Vec<usize>,
-    pub desc: Vec<String>,
-    pub humanness_impact: Vec<usize>,
-    pub level: Vec<usize>,
+pub struct Mode {
+	pub name: String,
+    pub price: usize,
+    pub desc: String,
+    pub humanness_impact: i32,
 }
