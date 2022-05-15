@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
-use info::{Library, create_library};
+use info::{create_library, Library};
 
 mod ending;
 mod home;
@@ -9,6 +11,9 @@ mod jobs_list;
 mod modes;
 mod randomizer;
 mod work;
+
+const WIDTH: f32 = 1600.0;
+const HEIGHT: f32 = 1200.0;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
@@ -22,25 +27,29 @@ pub enum AppState {
 
 pub struct GameProgress {
     money: usize,
-    humanness: usize,
+    humanness: i32,
     day: usize,
     max_days: usize,
     library: info::Library,
+    modes: Vec<(info::Mode, bool)>,
+    customers: Vec<info::CallCenterTask>,
 }
 
 #[derive(Component)]
 pub struct StartMarker;
+
+pub struct LoadedAssets(HashMap<String, Handle<Image>>);
 
 fn main() {
     App::new()
         .add_state(AppState::Start)
         .insert_resource(WindowDescriptor {
             title: "BiO Career Man II".to_string(),
-            width: 800.0,
-            height: 600.0,
+            width: WIDTH,
+            height: HEIGHT,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::BLUE))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(DefaultPlugins)
         .add_plugin(home::Home)
         .add_plugin(jobs_list::JobsList)
@@ -57,9 +66,13 @@ fn main() {
                 letters: Vec::new(),
                 min_len: Vec::new(),
                 max_len: Vec::new(),
-				news: Vec::new(),
+                news: Vec::new(),
             },
+            modes: Vec::new(),
+            customers: Vec::new(),
         })
+        .insert_resource(LoadedAssets(HashMap::new()))
+        .add_startup_system(load_assets)
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
         .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
         .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
@@ -68,9 +81,13 @@ fn main() {
         .run()
 }
 
-fn spawn_start(mut commands: Commands, assets: Res<AssetServer>, mut game_progress: ResMut<GameProgress>) {
-	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-	info::create_library(game_progress);
+fn spawn_start(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut game_progress: ResMut<GameProgress>,
+) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    info::create_library(game_progress);
 
     commands
         .spawn_bundle(SpriteBundle {
@@ -111,4 +128,32 @@ fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>
             AppState::Ending => app_state.set(AppState::Start).unwrap(),
         }
     }
+}
+
+fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>, audio: Res<Audio>) {
+	
+
+    let names = [
+        "home_new.png",
+        "work_new.png",
+        "customer_bubble.png",
+        "bcman_bubble.png",
+        "customer_color.png",
+        "customer_face_1.png",
+        "customer_mask.png",
+        "customer_redness.png",
+		"eye_mod_work.png",
+		"eye_mod_home.png",
+		"smilemod_work.png",
+		"smilemod_home.png",
+		"Bahamas.png",
+		"dumpster.png",
+		"newfarm.png",
+    ];
+
+    for name in names {
+        assets.0.insert(name.to_string(), asset_server.load(name));
+    }
+	let music = asset_server.load("sounds/100_human.ogg");
+    audio.play(music);
 }
