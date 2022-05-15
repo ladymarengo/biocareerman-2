@@ -44,7 +44,7 @@ fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>, load_assets: R
 	} else if game_progress.money >= 500 {
 		commands
         .spawn_bundle(SpriteBundle {
-            texture: load_assets.0.get("ending.png").unwrap().clone(),
+            texture: load_assets.0.get("newfarm.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()

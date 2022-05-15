@@ -130,7 +130,9 @@ fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>
     }
 }
 
-fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>) {
+fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>, audio: Res<Audio>) {
+	
+
     let names = [
         "home_new.png",
         "work_new.png",
@@ -146,9 +148,12 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>)
 		"smilemod_home.png",
 		"Bahamas.png",
 		"dumpster.png",
+		"newfarm.png",
     ];
 
     for name in names {
         assets.0.insert(name.to_string(), asset_server.load(name));
     }
+	let music = asset_server.load("sounds/100_human.ogg");
+    audio.play(music);
 }
