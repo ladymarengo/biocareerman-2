@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 use info::{Library, create_library};
 
@@ -35,6 +37,8 @@ pub struct GameProgress {
 #[derive(Component)]
 pub struct StartMarker;
 
+pub struct LoadedAssets(HashMap<String, Handle<Image>>);
+
 fn main() {
     App::new()
         .add_state(AppState::Start)
@@ -65,6 +69,8 @@ fn main() {
             },
 			modes: Vec::new(),
         })
+		.insert_resource(LoadedAssets(HashMap::new()))
+		.add_startup_system(load_assets)
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
         .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
         .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
@@ -115,5 +121,18 @@ fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>
             AppState::Work => app_state.set(AppState::Ending).unwrap(),
             AppState::Ending => app_state.set(AppState::Start).unwrap(),
         }
+    }
+}
+
+fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>) {
+    let names = [
+        "home_new.png",
+        "work_new.png",
+        "customer_bubble.png",
+        "bcman_bubble.png",
+    ];
+
+    for name in names {
+        assets.0.insert(name.to_string(), asset_server.load(name));
     }
 }
