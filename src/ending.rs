@@ -135,6 +135,75 @@ fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>, load_assets: R
             ..Default::default()
         })
 		.insert(EndingMarker);
+
+	let endings = vec![
+		"You're on a beach and you're the\nhappiest human on the planet.".to_string(),
+		"You're on a beach. Everything is wonderful\nbut sometimes your eye-mode is burning\nhot from the Sun.".to_string(),
+		"You're on a beach. You notice some\nrustiness from salty water and hear\nsand cracking in your metal joints.".to_string(),
+		"You're on a farm and you're one with it.".to_string(),
+		"You're on a farm and you feel pretty good.".to_string(),
+		"You're on a farm and smelling feces\ndon't bother you at all.".to_string(),
+		"You're in a dumpster but you're a human\nso you will find reasons to be happy\neven in this place.".to_string(),
+		"You're in a dumpster. You're not too\nhappy about it but it's okay.".to_string(),
+		"You're in a dumpster and you're a robot.\nYou feel weird connection with it.".to_string(),
+	];
+
+	let ending;
+
+	if game_progress.money >= 1000 {
+		if game_progress.humanness >= 75 {
+			ending = endings[0].clone();
+		} else if game_progress.humanness >= 40 {
+			ending = endings[1].clone();
+		} else {
+			ending = endings[2].clone();
+		}
+	} else if game_progress.money >= 500 {
+		if game_progress.humanness >= 75 {
+			ending = endings[3].clone();
+		} else if game_progress.humanness >= 40 {
+			ending = endings[4].clone();
+		} else {
+			ending = endings[5].clone();
+		}
+	} else {
+		if game_progress.humanness >= 75 {
+			ending = endings[6].clone();
+		} else if game_progress.humanness >= 40 {
+			ending = endings[7].clone();
+		} else {
+			ending = endings[8].clone();
+		}
+	}
+
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(50.0),
+                    left: Val::Px(WIDTH / 2.0 - 200.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                ending,
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 40.0,
+                    color: Color::GRAY,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+		.insert(EndingMarker);
     
 }
 
