@@ -12,6 +12,9 @@ pub struct Work;
 pub struct WorkMarker;
 
 #[derive(Component)]
+pub struct Bubble;
+
+#[derive(Component)]
 pub struct DelayTimer(Instant);
 
 #[derive(Component)]
@@ -43,7 +46,7 @@ impl Plugin for Work {
     }
 }
 
-fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: Res<AssetServer>) {
+fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: Res<AssetServer>, load_assets: Res<LoadedAssets>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
     timer.0 = Instant::now();
@@ -52,7 +55,7 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("work_new.png"),
+            texture: load_assets.0.get("work_new.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
@@ -63,6 +66,22 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
             },
             ..Default::default()
         })
+        .insert(WorkMarker);
+
+	commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("customer_bubble.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+		.insert(Bubble)
         .insert(WorkMarker);
 }
 
@@ -83,6 +102,8 @@ fn spawn_word(
 	let min_len = if game_progress.modes[3].1 {min(4, game_progress.library.min_len[game_progress.day - 1])} else {game_progress.library.min_len[game_progress.day - 1]};
 	let max_len = if game_progress.modes[3].1 {min(4, game_progress.library.max_len[game_progress.day - 1])} else {game_progress.library.max_len[game_progress.day - 1]};
 
+	
+
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
         let word = get_random_word(
             &game_progress.library.letters[game_progress.day - 1],
@@ -93,12 +114,11 @@ fn spawn_word(
             .spawn_bundle(TextBundle {
                 style: Style {
                     align_self: AlignSelf::Center,
-                    margin: Rect {
-                        left: (Val::Auto),
-                        right: (Val::Auto),
-                        top: (Val::Auto),
-                        bottom: (Val::Auto),
-                    },
+                    position: Rect {
+						top: Val::Px(HEIGHT / 2.0 - 200.0),
+						left: Val::Px(WIDTH / 2.0),
+						..Default::default()
+					},
                     ..default()
                 },
                 text: Text {
@@ -126,7 +146,7 @@ fn vectorize_word(word: &str, asset_server: Res<AssetServer>) -> Vec<TextSection
             style: TextStyle {
                 font: asset_server.load("FiraMono-Medium.ttf"),
                 font_size: 60.0,
-                color: Color::GOLD,
+                color: Color::GRAY,
             },
         })
     }
@@ -143,6 +163,7 @@ fn text_input(
     mut timer: ResMut<DelayTimer>,
     mut app_state: ResMut<State<AppState>>,
     workdaytimer: Res<WorkDayTimer>,
+	bubble: Query<Entity, With<Bubble>>,
 ) {
     if !query.is_empty() {
         let (id, mut word, mut text) = query.single_mut();
@@ -159,7 +180,7 @@ fn text_input(
                 }
                 if word.word.as_bytes()[word.index] == ev.char as u8 || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char) {
                     // println!("Yes!");
-                    text.sections[word.index].style.color = Color::GREEN;
+                    text.sections[word.index].style.color = Color::DARK_GREEN;
                 } else {
                     // println!("No.");
                     word.errors += 1;
@@ -188,6 +209,9 @@ fn text_input(
                         // println!("0");
                     }
                     commands.entity(id).despawn();
+					// if !bubble.is_empty() {
+					// 	commands.entity(bubble.single()).despawn();
+					// }
                     finish_day(game_progress, workdaytimer, app_state);
                     timer.0 = Instant::now();
                     return;

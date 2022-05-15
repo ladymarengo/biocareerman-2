@@ -25,10 +25,10 @@ impl Plugin for Home {
 		}
 	}
 
-fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: Res<GameProgress>) {
+fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: Res<GameProgress>, load_assets: Res<LoadedAssets>) {
 	commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("home_new.png"),
+            texture: load_assets.0.get("home_new.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
@@ -43,7 +43,7 @@ fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: R
 
 	commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("bcman_bubble.png"),
+            texture: load_assets.0.get("bcman_bubble.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(-700.0, -350.0, 0.0),
                 ..Default::default()
