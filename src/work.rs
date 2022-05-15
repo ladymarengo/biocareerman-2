@@ -50,7 +50,7 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("work_bg.png"),
+            texture: assets.load("work_new.png"),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()

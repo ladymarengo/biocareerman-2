@@ -28,7 +28,7 @@ impl Plugin for Home {
 fn spawn_home(mut commands: Commands, assets: Res<AssetServer>) {
 	commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("home_scaled.png"),
+            texture: assets.load("home_new.png"),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
