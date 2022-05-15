@@ -85,19 +85,20 @@ fn spawn_start(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut game_progress: ResMut<GameProgress>,
+	load_assets: Res<LoadedAssets>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     info::create_library(game_progress);
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("start.png"),
+            texture: load_assets.0.get("logo.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(800.0, 600.0)),
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
                 ..Default::default()
             },
             ..Default::default()
@@ -149,11 +150,12 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>,
 		"Bahamas.png",
 		"dumpster.png",
 		"newfarm.png",
+		"logo.png",
     ];
 
     for name in names {
         assets.0.insert(name.to_string(), asset_server.load(name));
     }
-	let music = asset_server.load("sounds/100_human.ogg");
+	let music = asset_server.load("sounds/100_humanlong.ogg");
     audio.play(music);
 }
