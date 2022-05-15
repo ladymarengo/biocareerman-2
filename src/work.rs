@@ -27,7 +27,11 @@ struct Word {
     index: usize,
     errors: usize,
     timer: Instant,
+    started: bool,
 }
+
+#[derive(Component)]
+pub struct Redness;
 
 impl Plugin for Work {
     fn build(&self, app: &mut App) {
@@ -41,7 +45,8 @@ impl Plugin for Work {
         .add_system_set(
             SystemSet::on_update(AppState::Work)
                 .with_system(text_input.label("print"))
-                .with_system(spawn_word.after("print")),
+                .with_system(spawn_word.after("print"))
+                .with_system(correct_redness),
         )
         .add_system_set(SystemSet::on_exit(AppState::Work).with_system(cleanup_work));
     }
@@ -91,6 +96,51 @@ fn spawn_work(
         .insert(Bubble)
         .insert(WorkMarker);
 
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("customer_color.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 1.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(WorkMarker);
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("customer_face_1.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 3.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(WorkMarker);
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("customer_mask.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 4.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(WorkMarker);
+
     let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
     commands.spawn_bundle(TextBundle {
         // transform: ,
@@ -131,6 +181,7 @@ fn spawn_word(
     asset_server: Res<AssetServer>,
     timer: Res<DelayTimer>,
     mut game_progress: ResMut<GameProgress>,
+    redness: Query<Entity, With<Redness>>,
 ) {
     let min_len = if game_progress.modes[3].1 {
         min(4, game_progress.library.min_len[game_progress.day - 1])
@@ -144,6 +195,10 @@ fn spawn_word(
     };
 
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
+        for e in redness.iter() {
+            commands.entity(e).despawn_recursive();
+        }
+
         let word = get_random_word(
             &game_progress.library.letters[game_progress.day - 1],
             min_len,
@@ -171,6 +226,7 @@ fn spawn_word(
                 index: 0,
                 errors: 0,
                 timer: Instant::now(),
+                started: false,
             })
             .insert(WorkMarker);
     }
@@ -216,6 +272,7 @@ fn text_input(
             {
                 if word.index == 0 {
                     word.timer = Instant::now();
+                    word.started = true;
                 }
                 if word.word.as_bytes()[word.index] == ev.char as u8
                     || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char)
@@ -270,12 +327,49 @@ fn text_input(
     // }
 }
 
+fn correct_redness(
+    mut commands: Commands,
+    redness: Query<Entity, With<Redness>>,
+    game_progress: Res<GameProgress>,
+    word: Query<&Word>,
+    load_assets: Res<LoadedAssets>,
+) {
+    let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
+    let redness: Vec<Entity> = redness.iter().collect();
+    if !word.is_empty() {
+        let word = word.single();
+        let redness_level = (word.timer.elapsed().as_millis()
+            / ((word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset) / 10))
+            as usize;
+        // println!("{} {}", redness.len(), redness_level);
+        if word.started && redness.len() < redness_level {
+            commands
+                .spawn_bundle(SpriteBundle {
+                    texture: load_assets.0.get("customer_redness.png").unwrap().clone(),
+                    transform: Transform {
+                        translation: Vec3::new(0.0, 0.0, 2.0),
+                        ..Default::default()
+                    },
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(Redness)
+                .insert(WorkMarker);
+        }
+    }
+
+    // println!("redness level {}", redness_level);
+}
+
 fn finish_day(
     mut game_progress: ResMut<GameProgress>,
     timer: Res<WorkDayTimer>,
     mut app_state: ResMut<State<AppState>>,
 ) {
-    if timer.0.elapsed().as_secs() > 2 {
+    if timer.0.elapsed().as_secs() > 15 {
         game_progress.day += 1;
         match game_progress.day {
             16 => app_state.set(AppState::Ending).unwrap(),

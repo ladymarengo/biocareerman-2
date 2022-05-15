@@ -136,6 +136,10 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>)
         "work_new.png",
         "customer_bubble.png",
         "bcman_bubble.png",
+        "customer_color.png",
+        "customer_face_1.png",
+        "customer_mask.png",
+        "customer_redness.png",
     ];
 
     for name in names {
