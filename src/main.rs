@@ -37,8 +37,8 @@ fn main() {
         .add_state(AppState::Start)
         .insert_resource(WindowDescriptor {
             title: "BiO Career Man II".to_string(),
-            width: 800.0,
-            height: 600.0,
+            width: 1600.0,
+            height: 1200.0,
             ..Default::default()
         })
         .insert_resource(ClearColor(Color::BLUE))
