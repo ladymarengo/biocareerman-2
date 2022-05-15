@@ -144,6 +144,40 @@ fn spawn_work(
         })
         .insert(WorkMarker);
 
+	if game_progress.humanness < 90 {
+		commands
+		.spawn_bundle(SpriteBundle {
+			texture: load_assets.0.get("eye_mod_work.png").unwrap().clone(),
+			transform: Transform {
+				translation: Vec3::new(0.0, 0.0, 5.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.insert(WorkMarker);
+	}
+	
+	if game_progress.modes[1].1 {
+		commands
+		.spawn_bundle(SpriteBundle {
+			texture: load_assets.0.get("smilemod_work.png").unwrap().clone(),
+			transform: Transform {
+				translation: Vec3::new(0.0, 0.0, 5.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.insert(WorkMarker);
+	}
+
 }
 
 fn cleanup_work(mut commands: Commands, query: Query<Entity, With<WorkMarker>>) {

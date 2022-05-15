@@ -84,6 +84,40 @@ fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: R
             ..Default::default()
         })
 		.insert(HomeMarker);
+
+	if game_progress.humanness < 90 {
+		commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("eye_mod_home.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+		.insert(HomeMarker);
+	}
+
+	if game_progress.modes[1].1 {
+		commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("smilemod_home.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+		.insert(HomeMarker);
+	}
 }
 
 fn home_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)
