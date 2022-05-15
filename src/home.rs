@@ -28,13 +28,13 @@ impl Plugin for Home {
 fn spawn_home(mut commands: Commands, assets: Res<AssetServer>) {
 	commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("home.png"),
+            texture: assets.load("home_bg.png"),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(800.0, 600.0)),
+                custom_size: Some(Vec2::new(1600.0, 1200.0)),
                 ..Default::default()
             },
             ..Default::default()

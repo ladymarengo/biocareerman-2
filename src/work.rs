@@ -41,25 +41,25 @@ impl Plugin for Work {
     }
 }
 
-fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>) {
+fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
     timer.0 = Instant::now();
 
-    println!("Work");
+    // println!("Work");
 
     commands
         .spawn_bundle(SpriteBundle {
+            texture: assets.load("work_bg.png"),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+                translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
-                color: Color::rgb(0.25, 0.0, 0.75),
-                custom_size: Some(Vec2::new(50.0, 100.0)),
-                ..default()
+                custom_size: Some(Vec2::new(1600.0, 1200.0)),
+                ..Default::default()
             },
-            ..default()
+            ..Default::default()
         })
         .insert(WorkMarker);
 }
