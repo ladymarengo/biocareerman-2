@@ -157,7 +157,7 @@ fn text_input(
                 if word.index == 0 {
                     word.timer = Instant::now();
                 }
-                if word.word.as_bytes()[word.index] == ev.char as u8 {
+                if word.word.as_bytes()[word.index] == ev.char as u8 || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char) {
                     // println!("Yes!");
                     text.sections[word.index].style.color = Color::GREEN;
                 } else {
@@ -214,4 +214,8 @@ fn finish_day(
             _ => app_state.set(AppState::Home).unwrap(),
         }
     }
+}
+
+fn if_letter_locked(mut game_progress: &ResMut<GameProgress>, c: char) -> bool {
+	(game_progress.modes[2].1 && ("aeuioy".contains(c))) || (game_progress.modes[4].1 && ("qe".contains(c)))
 }
