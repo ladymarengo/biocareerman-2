@@ -23,7 +23,11 @@ impl Plugin for Modes {
 		}
 	}
 
-fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>) {
+fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>, mut game_progress: ResMut<GameProgress>) {
+
+	let top: f32 = 100.0;
+    let left: f32 = 200.0;
+
 	commands
         .spawn_bundle(SpriteBundle {
             texture: assets.load("modes.png"),
@@ -38,6 +42,37 @@ fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>) {
             ..Default::default()
         })
 		.insert(ModesMarker);
+
+	for (index, (mode, purchased)) in game_progress.modes.iter().enumerate() {
+		commands
+			.spawn_bundle(TextBundle {
+				style: Style {
+					align_self: AlignSelf::Auto,
+					position_type: PositionType::Absolute,
+					position: Rect {
+						top: Val::Px(top + index as f32 * 100.0),
+						left: Val::Px(left),
+						..Default::default()
+					},
+					..Default::default()
+				},
+				text: Text::with_section(
+					format!("{}\n{}\nPrice: {}\nHumanness: {}", mode.name, mode.desc, mode.price, mode.humanness_impact),
+					TextStyle {
+						font: assets.load("FiraMono-Medium.ttf"),
+						font_size: 30.0,
+						color: if *purchased {Color::GREEN} else if mode.price < game_progress.money {Color::WHITE} else {Color::RED} ,
+					},
+					TextAlignment {
+						horizontal: HorizontalAlign::Center,
+						vertical: VerticalAlign::Center,
+						..Default::default()
+					},
+				),
+				..Default::default()
+			})
+			.insert(ModesMarker);
+		}
 }
 
 fn modes_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)

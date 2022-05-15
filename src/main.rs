@@ -26,7 +26,7 @@ pub struct GameProgress {
     day: usize,
     max_days: usize,
     library: info::Library,
-	modes: Vec<info::Mode>,
+	modes: Vec<(info::Mode, bool)>,
 }
 
 #[derive(Component)]

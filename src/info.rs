@@ -49,42 +49,42 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
     game_progress.humanness = 100;
     game_progress.day = 1;
 	game_progress.modes = vec![
-		Mode{
+		(Mode{
 			name: "Cyborg I".to_string(),
 			price: 200,
 			desc: "Eagle-eyed employee has a right for one error without a penalty.".to_string(),
 			humanness_impact: -10,
-		},
-		Mode{
+		}, false),
+		(Mode{
 			name: "Smiley".to_string(),
 			price: 300,
 			desc: "Additional time for your tasks.".to_string(),
 			humanness_impact: -10,
-		},
-		Mode{
+		}, false),
+		(Mode{
 			name: "Bcrrmn2".to_string(),
 			price: 500,
 			desc: "Type any button for a vowel.".to_string(),
 			humanness_impact: -40,
-		},
-		Mode{
+		}, false),
+		(Mode{
 			name: "No Time To Type".to_string(),
 			price: 400,
 			desc: "Limit the length of your tasks.".to_string(),
 			humanness_impact: -30,
-		},
-		Mode{
+		}, false),
+		(Mode{
 			name: "Writetyper's starterkit".to_string(),
 			price: 100,
 			desc: "Type any button for the letters 'q' and 'e'.".to_string(),
 			humanness_impact: -10,
-		},
-		Mode{
+		}, false),
+		(Mode{
 			name: "Bot Remover 2000".to_string(),
 			price: 600,
 			desc: "Restores some of your humanness.".to_string(),
 			humanness_impact: 25,
-		},];
+		}, false),];
 }
 
 pub struct Library {
