@@ -56,7 +56,7 @@ fn spawn_work(mut commands: Commands, mut timer: ResMut<WorkDayTimer>, assets: R
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(1600.0, 1200.0)),
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
                 ..Default::default()
             },
             ..Default::default()

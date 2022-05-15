@@ -52,7 +52,7 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 		(Mode{
 			name: "Cyborg I".to_string(),
 			price: 200,
-			desc: "Eagle-eyed employee has a right for one error without a penalty.".to_string(),
+			desc: "Eagle-eyed employee has a right for\none error without a penalty.".to_string(),
 			humanness_impact: -10,
 		}, false),
 		(Mode{

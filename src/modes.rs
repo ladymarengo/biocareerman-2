@@ -25,7 +25,7 @@ impl Plugin for Modes {
 
 fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>, mut game_progress: ResMut<GameProgress>) {
 
-	let top: f32 = 100.0;
+	let top: f32 = 300.0;
     let left: f32 = 200.0;
 
 	// commands
@@ -43,7 +43,7 @@ fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>, mut game_progre
     //     })
 	// 	.insert(ModesMarker);
 
-	let offsets = vec![(0, 0), (200,0), (400,0), (0,400), (200,400), (400,400)];
+	let offsets = vec![(0, 0), (300,0), (600,0), (0,600), (300,600), (600,600)];
 
 	for (index, (mode, purchased)) in game_progress.modes.iter().enumerate() {
 		let purchase_prompt = format!("Press {} to buy this mode.", index + 1);
@@ -67,7 +67,7 @@ fn spawn_modes(mut commands: Commands, assets: Res<AssetServer>, mut game_progre
 						},
 					sections: vec![
 						TextSection {
-							value: format!("{}\n{}\nPrice: {}\nHumanness: {}", mode.name, mode.desc, mode.price, mode.humanness_impact),
+							value: format!("\"{}\"\n{}\nPrice: {}\nHumanness: {}", mode.name, mode.desc, mode.price, mode.humanness_impact),
 							style: TextStyle {
 								font: assets.load("FiraMono-Medium.ttf"),
 								font_size: 30.0,

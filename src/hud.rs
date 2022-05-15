@@ -35,7 +35,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 "Money ",
                 TextStyle {
                     font: asset_server.load("FiraMono-Medium.ttf"),
-                    font_size: 30.0,
+                    font_size: 40.0,
                     color: Color::WHITE,
                 },
                 TextAlignment {
@@ -56,7 +56,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 position_type: PositionType::Absolute,
                 position: Rect {
                     top: Val::Px(top),
-                    left: Val::Px(left + 200.0),
+                    left: Val::Px(WIDTH / 3.0),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -65,7 +65,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 "Humanness ",
                 TextStyle {
                     font: asset_server.load("FiraMono-Medium.ttf"),
-                    font_size: 30.0,
+                    font_size: 40.0,
                     color: Color::WHITE,
                 },
                 TextAlignment {
@@ -86,7 +86,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 position_type: PositionType::Absolute,
                 position: Rect {
                     top: Val::Px(top),
-                    left: Val::Px(left + 450.0),
+                    left: Val::Px(WIDTH / 3.0 * 2.0),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -95,7 +95,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 "Day 1/20",
                 TextStyle {
                     font: asset_server.load("FiraMono-Medium.ttf"),
-                    font_size: 30.0,
+                    font_size: 40.0,
                     color: Color::WHITE,
                 },
                 TextAlignment {

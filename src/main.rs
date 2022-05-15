@@ -10,6 +10,9 @@ mod modes;
 mod randomizer;
 mod work;
 
+const WIDTH: f32 = 1600.0;
+const HEIGHT: f32 = 1200.0;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
     Start,
@@ -37,11 +40,11 @@ fn main() {
         .add_state(AppState::Start)
         .insert_resource(WindowDescriptor {
             title: "BiO Career Man II".to_string(),
-            width: 1600.0,
-            height: 1200.0,
+            width: WIDTH,
+            height: HEIGHT,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::BLUE))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(DefaultPlugins)
         .add_plugin(home::Home)
         .add_plugin(jobs_list::JobsList)

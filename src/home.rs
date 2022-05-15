@@ -34,7 +34,7 @@ fn spawn_home(mut commands: Commands, assets: Res<AssetServer>) {
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(1600.0, 1200.0)),
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
                 ..Default::default()
             },
             ..Default::default()
