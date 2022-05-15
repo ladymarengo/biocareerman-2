@@ -25,7 +25,7 @@ impl Plugin for Home {
 		}
 	}
 
-fn spawn_home(mut commands: Commands, assets: Res<AssetServer>) {
+fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: Res<GameProgress>) {
 	commands
         .spawn_bundle(SpriteBundle {
             texture: assets.load("home_new.png"),
@@ -37,6 +37,35 @@ fn spawn_home(mut commands: Commands, assets: Res<AssetServer>) {
                 custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
                 ..Default::default()
             },
+            ..Default::default()
+        })
+		.insert(HomeMarker);
+
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(300.0),
+                    left: Val::Px(100.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                game_progress.library.news[game_progress.day - 1].clone(),
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 30.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
             ..Default::default()
         })
 		.insert(HomeMarker);

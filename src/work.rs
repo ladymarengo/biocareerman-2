@@ -207,7 +207,7 @@ fn finish_day(
     timer: Res<WorkDayTimer>,
     mut app_state: ResMut<State<AppState>>,
 ) {
-    if timer.0.elapsed().as_secs() > 15 {
+    if timer.0.elapsed().as_secs() > 2 {
         game_progress.day += 1;
         match game_progress.day {
             16 => app_state.set(AppState::Ending).unwrap(),
