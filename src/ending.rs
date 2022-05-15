@@ -25,21 +25,88 @@ impl Plugin for Ending {
 		}
 	}
 
-fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>) {
-    commands
+fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>, load_assets: Res<LoadedAssets>, game_progress: Res<GameProgress>) {
+	if game_progress.money >= 1000 {
+		commands
         .spawn_bundle(SpriteBundle {
-            texture: assets.load("ending.png"),
+            texture: load_assets.0.get("Bahamas.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(800.0, 600.0)),
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
                 ..Default::default()
             },
             ..Default::default()
         })
 		.insert(EndingMarker);
+	} else if game_progress.money >= 500 {
+		commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("ending.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+		.insert(EndingMarker);
+	} else {
+		commands
+        .spawn_bundle(SpriteBundle {
+            texture: load_assets.0.get("dumpster.png").unwrap().clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+		.insert(EndingMarker);
+	}
+
+	if game_progress.humanness < 90 {
+		commands
+		.spawn_bundle(SpriteBundle {
+			texture: load_assets.0.get("eye_mod_work.png").unwrap().clone(),
+			transform: Transform {
+				translation: Vec3::new(0.0, 0.0, 5.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.insert(EndingMarker);
+	}
+	
+	if game_progress.modes[1].1 {
+		commands
+		.spawn_bundle(SpriteBundle {
+			texture: load_assets.0.get("smilemod_work.png").unwrap().clone(),
+			transform: Transform {
+				translation: Vec3::new(0.0, 0.0, 5.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.insert(EndingMarker);
+	}
+    
 }
 
 fn ending_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)

@@ -144,6 +144,8 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>)
 		"eye_mod_home.png",
 		"smilemod_work.png",
 		"smilemod_home.png",
+		"Bahamas.png",
+		"dumpster.png",
     ];
 
     for name in names {
