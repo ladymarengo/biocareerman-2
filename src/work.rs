@@ -1,3 +1,5 @@
+use std::cmp::{min, max};
+
 use super::*;
 use crate::randomizer::get_random_word;
 use bevy::math::Rect;
@@ -77,11 +79,15 @@ fn spawn_word(
     timer: Res<DelayTimer>,
     mut game_progress: ResMut<GameProgress>,
 ) {
+
+	let min_len = if game_progress.modes[3].1 {min(4, game_progress.library.min_len[game_progress.day - 1])} else {game_progress.library.min_len[game_progress.day - 1]};
+	let max_len = if game_progress.modes[3].1 {min(4, game_progress.library.max_len[game_progress.day - 1])} else {game_progress.library.max_len[game_progress.day - 1]};
+
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
         let word = get_random_word(
             &game_progress.library.letters[game_progress.day - 1],
-            game_progress.library.min_len[game_progress.day - 1],
-            game_progress.library.max_len[game_progress.day - 1],
+            min_len,
+            max_len,
         );
         commands
             .spawn_bundle(TextBundle {
@@ -160,20 +166,26 @@ fn text_input(
                     text.sections[word.index].style.color = Color::RED;
                 }
                 word.index += 1;
+
+				let mode_offset: u128 = if game_progress.modes[1].1 {500} else {0};
+
                 if word.index == word.word.len() {
-                    if word.errors == 0
-                        && word.timer.elapsed().as_millis() < word.word.len() as u128 * 1000
+					// println!("{}, {}, {}, {}", word.timer.elapsed().as_millis(), mode_offset, word.errors, game_progress.modes[0].1 as usize);
+
+                    if word.errors <= 0 + game_progress.modes[0].1 as usize
+                        && word.timer.elapsed().as_millis() < word.word.len() as u128 * 300 - game_progress.day as u128 * 15 + mode_offset
                     {
                         println!("Perfect!");
                         game_progress.money += word.index;
-                    } else if word.errors == 1
-                        || word.timer.elapsed().as_millis() < word.word.len() as u128 * 2000
+                    } else if word.errors > 1 + game_progress.modes[0].1 as usize
+                        || word.timer.elapsed().as_millis() > word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset
                     {
-                        println!("Imperfect.");
-                        game_progress.money += word.index - 1;
+						println!("Unsatisfying!");
+                        
                     } else {
-                        println!("Unsatisfying!");
-                        println!("0");
+                        println!("Imperfect.");
+                        game_progress.money += word.index / 2;
+                        // println!("0");
                     }
                     commands.entity(id).despawn();
                     finish_day(game_progress, workdaytimer, app_state);

@@ -21,8 +21,8 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
         vec!['q', 'e'],
     ];
 
-    let min_len: Vec<usize> = vec![1, 2, 4, 2, 2, 4, 3, 2, 3, 3, 4, 3, 7, 4, 1];
-    let max_len: Vec<usize> = vec![3, 4, 6, 5, 5, 7, 5, 8, 6, 6, 6, 6, 10, 7, 5];
+    let min_len: Vec<usize> = vec![5, 5, 4, 2, 2, 4, 3, 2, 3, 3, 4, 3, 7, 4, 1];
+    let max_len: Vec<usize> = vec![6, 6, 6, 5, 5, 7, 5, 8, 6, 6, 6, 6, 10, 7, 5];
     let news: Vec<String> = vec![
         "Breaking news from the corporate world! GovCorp has consolidated all the call centers of the country into one. Critics of the merger warn of increasing queuing time. Call center specialist Anne Swear had this to say: \"It's not even hard to press two buttons. I'm not sure why is the job paid by the taxes.\"".to_string(),
 		"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac lacus ac ipsum tincidunt euismod. Aliquam erat volutpat. Etiam ornare est non egestas aliquam. Curabitur a tempor sapien. Etiam pharetra.".to_string(),
