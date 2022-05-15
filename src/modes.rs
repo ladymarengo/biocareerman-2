@@ -1,5 +1,4 @@
 use super::*;
-use bevy::prelude::*;
 
 pub struct Modes;
 
@@ -20,7 +19,7 @@ impl Plugin for Modes {
 fn spawn_modes(
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut game_progress: ResMut<GameProgress>,
+    game_progress: ResMut<GameProgress>,
 ) {
     let top: f32 = 300.0;
     let left: f32 = 200.0;
@@ -106,7 +105,7 @@ fn spawn_modes(
             .insert(ModesMarker);
     }
 
-	commands
+    commands
         .spawn_bundle(TextBundle {
             style: Style {
                 align_self: AlignSelf::Auto,
@@ -133,7 +132,7 @@ fn spawn_modes(
             ),
             ..Default::default()
         })
-		.insert(ModesMarker);
+        .insert(ModesMarker);
 }
 
 fn modes_input(
@@ -145,56 +144,74 @@ fn modes_input(
     if keys.just_pressed(KeyCode::H) {
         app_state.set(AppState::Home).unwrap();
     }
-    if keys.just_pressed(KeyCode::Key1) && game_progress.modes[0].1 == false && game_progress.money >= game_progress.modes[0].0.price {
+    if keys.just_pressed(KeyCode::Key1)
+        && game_progress.modes[0].1 == false
+        && game_progress.money >= game_progress.modes[0].0.price
+    {
         game_progress.modes[0].1 = true;
-		game_progress.money -= game_progress.modes[0].0.price;
-		game_progress.humanness += game_progress.modes[0].0.humanness_impact;
-	}
-	if keys.just_pressed(KeyCode::Key2) && game_progress.modes[1].1 == false && game_progress.money >= game_progress.modes[1].0.price {
+        game_progress.money -= game_progress.modes[0].0.price;
+        game_progress.humanness += game_progress.modes[0].0.humanness_impact;
+    }
+    if keys.just_pressed(KeyCode::Key2)
+        && game_progress.modes[1].1 == false
+        && game_progress.money >= game_progress.modes[1].0.price
+    {
         game_progress.modes[1].1 = true;
-		game_progress.money -= game_progress.modes[1].0.price;
-		game_progress.humanness += game_progress.modes[1].0.humanness_impact;
-	}
-	if keys.just_pressed(KeyCode::Key3) && game_progress.modes[2].1 == false && game_progress.money >= game_progress.modes[2].0.price {
+        game_progress.money -= game_progress.modes[1].0.price;
+        game_progress.humanness += game_progress.modes[1].0.humanness_impact;
+    }
+    if keys.just_pressed(KeyCode::Key3)
+        && game_progress.modes[2].1 == false
+        && game_progress.money >= game_progress.modes[2].0.price
+    {
         game_progress.modes[2].1 = true;
-		game_progress.money -= game_progress.modes[2].0.price;
-		game_progress.humanness += game_progress.modes[2].0.humanness_impact;
-	}
-	if keys.just_pressed(KeyCode::Key4) && game_progress.modes[3].1 == false && game_progress.money >= game_progress.modes[3].0.price {
+        game_progress.money -= game_progress.modes[2].0.price;
+        game_progress.humanness += game_progress.modes[2].0.humanness_impact;
+    }
+    if keys.just_pressed(KeyCode::Key4)
+        && game_progress.modes[3].1 == false
+        && game_progress.money >= game_progress.modes[3].0.price
+    {
         game_progress.modes[3].1 = true;
-		game_progress.money -= game_progress.modes[3].0.price;
-		game_progress.humanness += game_progress.modes[3].0.humanness_impact;
-	}
-	if keys.just_pressed(KeyCode::Key5) && game_progress.modes[4].1 == false && game_progress.money >= game_progress.modes[4].0.price {
+        game_progress.money -= game_progress.modes[3].0.price;
+        game_progress.humanness += game_progress.modes[3].0.humanness_impact;
+    }
+    if keys.just_pressed(KeyCode::Key5)
+        && game_progress.modes[4].1 == false
+        && game_progress.money >= game_progress.modes[4].0.price
+    {
         game_progress.modes[4].1 = true;
-		game_progress.money -= game_progress.modes[4].0.price;
-		game_progress.humanness += game_progress.modes[4].0.humanness_impact;
-	}
-	if keys.just_pressed(KeyCode::Key6) && game_progress.modes[5].1 == false && game_progress.money >= game_progress.modes[5].0.price {
+        game_progress.money -= game_progress.modes[4].0.price;
+        game_progress.humanness += game_progress.modes[4].0.humanness_impact;
+    }
+    if keys.just_pressed(KeyCode::Key6)
+        && game_progress.modes[5].1 == false
+        && game_progress.money >= game_progress.modes[5].0.price
+    {
         game_progress.modes[5].1 = true;
-		game_progress.money -= game_progress.modes[5].0.price;
-		game_progress.humanness += game_progress.modes[5].0.humanness_impact;
-	}
+        game_progress.money -= game_progress.modes[5].0.price;
+        game_progress.humanness += game_progress.modes[5].0.humanness_impact;
+    }
 
-	for (mut text, index) in texts.iter_mut() {
-		let purchase_prompt = format!("Press {} to buy this mode.", index.0 + 1);
-		text.sections[1].value = format!(
-			"\n{}",
-			if game_progress.modes[index.0].1 {
-				"You already have this mode."
-			} else if game_progress.modes[index.0].0.price <= game_progress.money {
-				&purchase_prompt
-			} else {
-				"You don't have enough money."
-			}
-		);
-		text.sections[1].style.color = if game_progress.modes[index.0].1 {
-			Color::GREEN
-		} else if game_progress.modes[index.0].0.price <= game_progress.money {
-			Color::BLUE
-		} else {
-			Color::RED
-		};
+    for (mut text, index) in texts.iter_mut() {
+        let purchase_prompt = format!("Press {} to buy this mode.", index.0 + 1);
+        text.sections[1].value = format!(
+            "\n{}",
+            if game_progress.modes[index.0].1 {
+                "You already have this mode."
+            } else if game_progress.modes[index.0].0.price <= game_progress.money {
+                &purchase_prompt
+            } else {
+                "You don't have enough money."
+            }
+        );
+        text.sections[1].style.color = if game_progress.modes[index.0].1 {
+            Color::GREEN
+        } else if game_progress.modes[index.0].0.price <= game_progress.money {
+            Color::BLUE
+        } else {
+            Color::RED
+        };
     }
 }
 

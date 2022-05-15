@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::{prelude::*, window::WindowMode};
-use info::{create_library, Library};
+use bevy::prelude::*;
 
 mod ending;
 mod home;
@@ -84,11 +83,11 @@ fn main() {
 fn spawn_start(
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut game_progress: ResMut<GameProgress>,
-	load_assets: Res<LoadedAssets>,
+    game_progress: ResMut<GameProgress>,
+    load_assets: Res<LoadedAssets>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-	commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(UiCameraBundle::default());
     info::create_library(game_progress);
 
     commands
@@ -106,7 +105,7 @@ fn spawn_start(
         })
         .insert(StartMarker);
 
-	commands
+    commands
         .spawn_bundle(TextBundle {
             style: Style {
                 align_self: AlignSelf::Auto,
@@ -133,7 +132,7 @@ fn spawn_start(
             ),
             ..Default::default()
         })
-		.insert(StartMarker);
+        .insert(StartMarker);
 }
 
 fn cleanup_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {
@@ -148,22 +147,24 @@ fn start_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>
     }
 }
 
-fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if keys.just_pressed(KeyCode::Space) {
-        match app_state.current() {
-            AppState::Start => app_state.set(AppState::Home).unwrap(),
-            AppState::Home => app_state.set(AppState::Modes).unwrap(),
-            AppState::Modes => app_state.set(AppState::JobsList).unwrap(),
-            AppState::JobsList => app_state.set(AppState::Work).unwrap(),
-            AppState::Work => app_state.set(AppState::Ending).unwrap(),
-            AppState::Ending => app_state.set(AppState::Start).unwrap(),
-        }
-    }
-}
+// fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
+//     if keys.just_pressed(KeyCode::Space) {
+//         match app_state.current() {
+//             AppState::Start => app_state.set(AppState::Home).unwrap(),
+//             AppState::Home => app_state.set(AppState::Modes).unwrap(),
+//             AppState::Modes => app_state.set(AppState::JobsList).unwrap(),
+//             AppState::JobsList => app_state.set(AppState::Work).unwrap(),
+//             AppState::Work => app_state.set(AppState::Ending).unwrap(),
+//             AppState::Ending => app_state.set(AppState::Start).unwrap(),
+//         }
+//     }
+// }
 
-fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>, audio: Res<Audio>) {
-	
-
+fn load_assets(
+    mut assets: ResMut<LoadedAssets>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+) {
     let names = [
         "home_new.png",
         "work_new.png",
@@ -173,19 +174,19 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>,
         "customer_face_1.png",
         "customer_mask.png",
         "customer_redness.png",
-		"eye_mod_work.png",
-		"eye_mod_home.png",
-		"smilemod_work.png",
-		"smilemod_home.png",
-		"Bahamas.png",
-		"dumpster.png",
-		"newfarm.png",
-		"logo.png",
+        "eye_mod_work.png",
+        "eye_mod_home.png",
+        "smilemod_work.png",
+        "smilemod_home.png",
+        "Bahamas.png",
+        "dumpster.png",
+        "newfarm.png",
+        "logo.png",
     ];
 
     for name in names {
         assets.0.insert(name.to_string(), asset_server.load(name));
     }
-	let music = asset_server.load("sounds/100_humanlong.ogg");
+    let music = asset_server.load("sounds/100_humanlong.ogg");
     audio.play(music);
 }

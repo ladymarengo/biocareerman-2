@@ -1,5 +1,4 @@
 use super::*;
-use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct HudMarker;
@@ -14,8 +13,6 @@ pub struct Humanness;
 pub struct Day;
 
 pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    
-
     let top: f32 = 20.0;
     let left: f32 = 200.0;
 
@@ -111,27 +108,26 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub fn update_hud(
-    mut texts: Query<(
-        &mut Text,
-        Option<&Money>,
-        Option<&Humanness>,
-        Option<&Day>,
-    ), With<HudMarker>>,
-	game_progress: Res<GameProgress>
+    mut texts: Query<
+        (&mut Text, Option<&Money>, Option<&Humanness>, Option<&Day>),
+        With<HudMarker>,
+    >,
+    game_progress: Res<GameProgress>,
 ) {
-	if !texts.is_empty() {
-		for (mut text, if_money, if_humanness, if_day) in texts.iter_mut() {
-			if let Some(_t) = if_money {
-				text.sections[0].value = format!("Money: {}", game_progress.money);
-			}
-			if let Some(_t) = if_humanness {
-				text.sections[0].value = format!("Humanness: {}", game_progress.humanness);
-			}
-			if let Some(_t) = if_day {
-				text.sections[0].value = format!("Day {}/{}", game_progress.day, game_progress.max_days);
-			}
-		}
-	}
+    if !texts.is_empty() {
+        for (mut text, if_money, if_humanness, if_day) in texts.iter_mut() {
+            if let Some(_t) = if_money {
+                text.sections[0].value = format!("Money: {}", game_progress.money);
+            }
+            if let Some(_t) = if_humanness {
+                text.sections[0].value = format!("Humanness: {}", game_progress.humanness);
+            }
+            if let Some(_t) = if_day {
+                text.sections[0].value =
+                    format!("Day {}/{}", game_progress.day, game_progress.max_days);
+            }
+        }
+    }
 }
 
 pub fn cleanup_hud(mut commands: Commands, query: Query<Entity, With<HudMarker>>) {
