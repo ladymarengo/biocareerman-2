@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bevy::prelude::*;
-use info::{Library, create_library};
+use info::{create_library, Library};
 
 mod ending;
 mod home;
@@ -31,7 +31,7 @@ pub struct GameProgress {
     day: usize,
     max_days: usize,
     library: info::Library,
-	modes: Vec<(info::Mode, bool)>,
+    modes: Vec<(info::Mode, bool)>,
 }
 
 #[derive(Component)]
@@ -65,12 +65,12 @@ fn main() {
                 letters: Vec::new(),
                 min_len: Vec::new(),
                 max_len: Vec::new(),
-				news: Vec::new(),
+                news: Vec::new(),
             },
-			modes: Vec::new(),
+            modes: Vec::new(),
         })
-		.insert_resource(LoadedAssets(HashMap::new()))
-		.add_startup_system(load_assets)
+        .insert_resource(LoadedAssets(HashMap::new()))
+        .add_startup_system(load_assets)
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
         .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
         .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
@@ -79,9 +79,13 @@ fn main() {
         .run()
 }
 
-fn spawn_start(mut commands: Commands, assets: Res<AssetServer>, mut game_progress: ResMut<GameProgress>) {
-	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-	info::create_library(game_progress);
+fn spawn_start(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut game_progress: ResMut<GameProgress>,
+) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    info::create_library(game_progress);
 
     commands
         .spawn_bundle(SpriteBundle {
@@ -130,10 +134,10 @@ fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>)
         "work_new.png",
         "customer_bubble.png",
         "bcman_bubble.png",
-		"customer_color.png",
-		"customer_face_1.png",
-		"customer_mask.png",
-		"customer_redness.png",
+        "customer_color.png",
+        "customer_face_1.png",
+        "customer_mask.png",
+        "customer_redness.png",
     ];
 
     for name in names {
