@@ -45,7 +45,7 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
     game_progress.library.min_len = min_len;
     game_progress.library.max_len = max_len;
     game_progress.library.news = news;
-    game_progress.money = 0;
+    game_progress.money = 2000;
     game_progress.humanness = 100;
     game_progress.day = 1;
 	game_progress.modes = vec![

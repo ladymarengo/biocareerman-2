@@ -25,7 +25,7 @@ pub enum AppState {
 
 pub struct GameProgress {
     money: usize,
-    humanness: usize,
+    humanness: i32,
     day: usize,
     max_days: usize,
     library: info::Library,
