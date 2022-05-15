@@ -14,7 +14,7 @@ pub struct Humanness;
 pub struct Day;
 
 pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(UiCameraBundle::default());
+    
 
     let top: f32 = 20.0;
     let left: f32 = 200.0;

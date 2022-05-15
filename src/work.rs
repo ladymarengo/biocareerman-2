@@ -178,6 +178,35 @@ fn spawn_work(
 		.insert(WorkMarker);
 	}
 
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(20.0),
+                    left: Val::Px(WIDTH / 2.0 - 300.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Type gray letters to complete tasks",
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+		.insert(WorkMarker);
+
 }
 
 fn cleanup_work(mut commands: Commands, query: Query<Entity, With<WorkMarker>>) {

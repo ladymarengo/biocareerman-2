@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowMode};
 use info::{create_library, Library};
 
 mod ending;
@@ -76,7 +76,7 @@ fn main() {
         .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
         .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
         .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
-        .add_system(change_state)
+        // .add_system(change_state)
         .add_system(hud::update_hud)
         .run()
 }
@@ -88,6 +88,7 @@ fn spawn_start(
 	load_assets: Res<LoadedAssets>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+	commands.spawn_bundle(UiCameraBundle::default());
     info::create_library(game_progress);
 
     commands
@@ -104,6 +105,35 @@ fn spawn_start(
             ..Default::default()
         })
         .insert(StartMarker);
+
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(50.0),
+                    left: Val::Px(WIDTH / 2.0 - 175.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Press S to start",
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+		.insert(StartMarker);
 }
 
 fn cleanup_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {

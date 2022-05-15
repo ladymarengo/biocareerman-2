@@ -106,6 +106,35 @@ fn spawn_ending(mut commands: Commands, assets: Res<AssetServer>, load_assets: R
 		})
 		.insert(EndingMarker);
 	}
+
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(50.0),
+                    left: Val::Px(WIDTH / 2.0 - 200.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Press A to start again",
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+		.insert(EndingMarker);
     
 }
 

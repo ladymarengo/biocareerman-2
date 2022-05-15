@@ -118,6 +118,35 @@ fn spawn_home(mut commands: Commands, assets: Res<AssetServer>, game_progress: R
         })
 		.insert(HomeMarker);
 	}
+
+	commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(50.0),
+                    left: Val::Px(WIDTH / 2.0 - 350.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Press M to buy modes, W to go to work",
+                TextStyle {
+                    font: assets.load("FiraMono-Medium.ttf"),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+		.insert(HomeMarker);
 }
 
 fn home_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>)
