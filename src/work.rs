@@ -176,7 +176,7 @@ fn text_input(
                         && word.timer.elapsed().as_millis() < word.word.len() as u128 * 300 - game_progress.day as u128 * 15 + mode_offset
                     {
                         println!("Perfect!");
-                        game_progress.money += word.index;
+                        game_progress.money += word.index * word.word.len();
                     } else if word.errors > 1 + game_progress.modes[0].1 as usize
                         || word.timer.elapsed().as_millis() > word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset
                     {
@@ -184,7 +184,7 @@ fn text_input(
                         
                     } else {
                         println!("Imperfect.");
-                        game_progress.money += word.index / 2;
+                        game_progress.money += word.index;
                         // println!("0");
                     }
                     commands.entity(id).despawn();
@@ -207,7 +207,7 @@ fn finish_day(
     timer: Res<WorkDayTimer>,
     mut app_state: ResMut<State<AppState>>,
 ) {
-    if timer.0.elapsed().as_secs() > 10 {
+    if timer.0.elapsed().as_secs() > 15 {
         game_progress.day += 1;
         match game_progress.day {
             16 => app_state.set(AppState::Ending).unwrap(),
