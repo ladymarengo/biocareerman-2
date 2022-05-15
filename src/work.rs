@@ -224,6 +224,9 @@ fn spawn_word(
     redness: Query<Entity, With<Redness>>,
 	mut phrase: Query<&mut Text, With<Phrase>>,
 ) {
+	if game_progress.day >= 16 {
+		return;
+	}
     let min_len = if game_progress.modes[3].1 {
         min(4, game_progress.library.min_len[game_progress.day - 1])
     } else {
