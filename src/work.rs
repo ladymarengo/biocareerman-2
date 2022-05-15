@@ -16,6 +16,9 @@ pub struct WorkMarker;
 pub struct Bubble;
 
 #[derive(Component)]
+pub struct Phrase;
+
+#[derive(Component)]
 pub struct DelayTimer(Instant);
 
 #[derive(Component)]
@@ -141,32 +144,6 @@ fn spawn_work(
         })
         .insert(WorkMarker);
 
-    let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
-    commands.spawn_bundle(TextBundle {
-        // transform: ,
-        style: Style {
-            align_self: AlignSelf::Center,
-            position: Rect {
-                top: Val::Px(HEIGHT / 2.0 - 200.0),
-                left: Val::Px(100.0),
-                ..Default::default()
-            },
-            ..default()
-        },
-        text: Text::with_section(
-            game_progress.customers[phrase_index].task.to_string(),
-            TextStyle {
-                font: assets.load("FiraMono-Medium.ttf"),
-                font_size: 23.0,
-                color: Color::BLACK,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Left,
-                ..default()
-            },
-        ),
-        ..default()
-    });
 }
 
 fn cleanup_work(mut commands: Commands, query: Query<Entity, With<WorkMarker>>) {
@@ -182,6 +159,7 @@ fn spawn_word(
     timer: Res<DelayTimer>,
     mut game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
+	mut phrase: Query<&mut Text, With<Phrase>>,
 ) {
     let min_len = if game_progress.modes[3].1 {
         min(4, game_progress.library.min_len[game_progress.day - 1])
@@ -195,6 +173,40 @@ fn spawn_word(
     };
 
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
+		let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
+		if phrase.is_empty() {
+			commands.spawn_bundle(TextBundle {
+				// transform: ,
+				style: Style {
+					align_self: AlignSelf::Center,
+					position: Rect {
+						top: Val::Px(HEIGHT / 2.0 - 300.0),
+						left: Val::Px(500.0),
+						..Default::default()
+					},
+					..default()
+				},
+				text: Text::with_section(
+					game_progress.customers[phrase_index].task.to_string(),
+					TextStyle {
+						font: asset_server.load("FiraMono-Medium.ttf"),
+						font_size: 26.0,
+						color: Color::BLACK,
+					},
+					TextAlignment {
+						horizontal: HorizontalAlign::Center,
+						..default()
+					},
+				),
+				..default()
+			})
+			.insert(Phrase)
+			.insert(WorkMarker);
+		} else {
+			let mut phrase = phrase.single_mut();
+			phrase.sections[0].value = game_progress.customers[phrase_index].task.to_string();
+		}
+
         for e in redness.iter() {
             commands.entity(e).despawn_recursive();
         }
@@ -210,7 +222,7 @@ fn spawn_word(
                     align_self: AlignSelf::Center,
                     position: Rect {
                         top: Val::Px(HEIGHT / 2.0 - 200.0),
-                        left: Val::Px(WIDTH / 2.0),
+                        left: Val::Px(200.0),
                         ..Default::default()
                     },
                     ..default()
