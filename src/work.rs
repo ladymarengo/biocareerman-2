@@ -87,7 +87,7 @@ fn spawn_work(
         .spawn_bundle(SpriteBundle {
             texture: load_assets.0.get("customer_bubble.png").unwrap().clone(),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
+                translation: Vec3::new(0.0, 0.0, 0.5),
                 ..Default::default()
             },
             sprite: Sprite {
