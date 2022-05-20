@@ -10,12 +10,14 @@ mod jobs_list;
 mod modes;
 mod randomizer;
 mod work;
+mod start;
 
 const WIDTH: f32 = 1600.0;
 const HEIGHT: f32 = 1200.0;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
+	Loading,
     Start,
     Home,
     Modes,
@@ -34,14 +36,13 @@ pub struct GameProgress {
     customers: Vec<info::CallCenterTask>,
 }
 
-#[derive(Component)]
-pub struct StartMarker;
-
 pub struct LoadedAssets(HashMap<String, Handle<Image>>);
+
+pub struct LoadedFonts(HashMap<String, Handle<Font>>);
 
 fn main() {
     App::new()
-        .add_state(AppState::Start)
+        .add_state(AppState::Loading)
         .insert_resource(WindowDescriptor {
             title: "BiO Career Man II".to_string(),
             width: WIDTH,
@@ -55,6 +56,7 @@ fn main() {
         .add_plugin(modes::Modes)
         .add_plugin(work::Work)
         .add_plugin(ending::Ending)
+		.add_plugin(start::Start)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(GameProgress {
             money: 0,
@@ -71,122 +73,17 @@ fn main() {
             customers: Vec::new(),
         })
         .insert_resource(LoadedAssets(HashMap::new()))
-        .add_startup_system(load_assets)
-        .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
-        .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
-        .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
-        // .add_system(change_state)
+        // .add_startup_system(load_assets)
         .add_system(hud::update_hud)
+		.add_system_set(
+            SystemSet::on_enter(AppState::Loading)
+                .with_system(load_assets))
+		.add_system_set(
+			SystemSet::on_update(AppState::Loading)
+				.with_system(change_state)
+        )
         .run()
 }
-
-fn spawn_start(
-    mut commands: Commands,
-    assets: Res<AssetServer>,
-    game_progress: ResMut<GameProgress>,
-    load_assets: Res<LoadedAssets>,
-) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    commands.spawn_bundle(UiCameraBundle::default());
-    info::create_library(game_progress);
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: load_assets.0.get("logo.png").unwrap().clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(StartMarker);
-
-    // commands
-    //     .spawn_bundle(TextBundle {
-    //         style: Style {
-    //             align_self: AlignSelf::Auto,
-    //             position_type: PositionType::Absolute,
-    //             position: Rect {
-    //                 bottom: Val::Px(50.0),
-    //                 left: Val::Px(WIDTH / 2.0 - 175.0),
-    //                 ..Default::default()
-    //             },
-    //             ..Default::default()
-    //         },
-    //         text: Text::with_section(
-    //             "Press S to start",
-    //             TextStyle {
-    //                 font: assets.load("FiraMono-Medium.ttf"),
-    //                 font_size: 40.0,
-    //                 color: Color::WHITE,
-    //             },
-    //             TextAlignment {
-    //                 horizontal: HorizontalAlign::Center,
-    //                 vertical: VerticalAlign::Center,
-    //                 ..Default::default()
-    //             },
-    //         ),
-    //         ..Default::default()
-    //     })
-    //     .insert(StartMarker);
-
-
-
-	commands.spawn_bundle(Text2dBundle {
-        text: Text::with_section(
-            "Press S to start",
-            TextStyle {
-				font: assets.load("FiraMono-Medium.ttf"),
-				font_size: 60.0,
-				color: Color::WHITE,
-			},
-            TextAlignment {
-				vertical: VerticalAlign::Center,
-				horizontal: HorizontalAlign::Center,
-			}
-        ),
-        text_2d_bounds: Text2dBounds {
-            // Wrap text in the rectangle
-            size: Size{width: WIDTH * 0.4, height: HEIGHT * 0.1},
-        },
-        transform: Transform::from_xyz(
-            0.0,
-            -(HEIGHT / 2.0 - HEIGHT * 0.07),
-            1.0,
-        ),
-        ..default()
-	})
-        .insert(StartMarker);
-}
-
-fn cleanup_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {
-    for e in query.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-}
-
-fn start_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if keys.just_pressed(KeyCode::S) {
-        app_state.set(AppState::Home).unwrap();
-    }
-}
-
-// fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-//     if keys.just_pressed(KeyCode::Space) {
-//         match app_state.current() {
-//             AppState::Start => app_state.set(AppState::Home).unwrap(),
-//             AppState::Home => app_state.set(AppState::Modes).unwrap(),
-//             AppState::Modes => app_state.set(AppState::JobsList).unwrap(),
-//             AppState::JobsList => app_state.set(AppState::Work).unwrap(),
-//             AppState::Work => app_state.set(AppState::Ending).unwrap(),
-//             AppState::Ending => app_state.set(AppState::Start).unwrap(),
-//         }
-//     }
-// }
 
 fn load_assets(
     mut assets: ResMut<LoadedAssets>,
@@ -194,6 +91,7 @@ fn load_assets(
     audio: Res<Audio>,
 ) {
     let names = [
+        "logo.png",
         "home_new.png",
         "work_new.png",
         "customer_bubble.png",
@@ -209,7 +107,6 @@ fn load_assets(
         "Bahamas.png",
         "dumpster.png",
         "newfarm.png",
-        "logo.png",
     ];
 
     for name in names {
@@ -217,4 +114,9 @@ fn load_assets(
     }
     let music = asset_server.load("sounds/100_humanlong.ogg");
     audio.play(music);
+
+}
+
+fn change_state(mut app_state: ResMut<State<AppState>>) {
+	app_state.set(AppState::Start).unwrap();
 }
