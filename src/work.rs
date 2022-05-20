@@ -24,6 +24,7 @@ pub struct DelayTimer(Instant);
 #[derive(Component)]
 pub struct WorkDayTimer(Instant);
 
+
 #[derive(Component)]
 struct Word {
     word: String,
@@ -31,6 +32,8 @@ struct Word {
     errors: usize,
     timer: Instant,
     started: bool,
+	marked_to_despawn: bool,
+	despawn_timer: Instant,
 }
 
 #[derive(Component)]
@@ -218,7 +221,6 @@ fn spawn_word(
     mut commands: Commands,
     query: Query<Entity, With<Word>>,
     asset_server: Res<AssetServer>,
-    timer: Res<DelayTimer>,
     game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
 ) {
@@ -236,7 +238,7 @@ fn spawn_word(
         game_progress.library.max_len[game_progress.day - 1]
     };
 
-    if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
+    if query.iter().collect::<Vec<Entity>>().len() == 0 {
 
         for e in redness.iter() {
             commands.entity(e).despawn_recursive();
@@ -278,6 +280,8 @@ fn spawn_word(
 				        errors: 0,
 				        timer: Instant::now(),
 				        started: false,
+						marked_to_despawn: false,
+						despawn_timer: Instant::now(),
 				    })
 			.insert(WorkMarker);
     }
@@ -316,6 +320,15 @@ fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progr
 		},
 	});
 
+	sections.push(TextSection {
+		value: "".to_string(),
+		style: TextStyle {
+			font: asset_server.load("FiraMono-Medium.ttf"),
+			font_size: 50.0,
+			color: Color::BLACK,
+		},
+	});
+
     sections
 }
 
@@ -325,12 +338,19 @@ fn text_input(
     mut query: Query<(Entity, &mut Word, &mut Text)>,
     mut commands: Commands,
     mut game_progress: ResMut<GameProgress>,
-    mut timer: ResMut<DelayTimer>,
     app_state: ResMut<State<AppState>>,
     workdaytimer: Res<WorkDayTimer>,
 ) {
     if !query.is_empty() {
         let (id, mut word, mut text) = query.single_mut();
+
+		if word.marked_to_despawn {
+			if word.despawn_timer.elapsed().as_millis() > 1000 {
+				commands.entity(id).despawn();
+                finish_day(game_progress, workdaytimer, app_state);
+			}
+			return;
+		}
 
         for ev in char_evr.iter() {
             string.push(ev.char);
@@ -360,22 +380,23 @@ fn text_input(
                             < word.word.len() as u128 * 300 - game_progress.day as u128 * 15
                                 + mode_offset
                     {
-                        // println!("Perfect!");
+						text.sections[word.index + 2].style.color = Color::DARK_GREEN;
+						text.sections[word.index + 2].value = format!(" Perfect! Your reward is {} Botcoins.", word.index * word.word.len());
                         game_progress.money += word.index * word.word.len();
                     } else if word.errors > 1 + game_progress.modes[0].1 as usize
                         || word.timer.elapsed().as_millis()
                             > word.word.len() as u128 * 600 - game_progress.day as u128 * 30
                                 + mode_offset
                     {
-                        // println!("Unsatisfying!");
+						text.sections[word.index + 2].style.color = Color::RED;
+						text.sections[word.index + 2].value = format!(" Awful! Your reward is 0 Botcoins.");
                     } else {
-                        // println!("Imperfect.");
+						text.sections[word.index + 2].style.color = Color::YELLOW_GREEN;
+						text.sections[word.index + 2].value = format!(" Fine. Your reward is {} Botcoins.", word.index);
                         game_progress.money += word.index;
                     }
-                    commands.entity(id).despawn();
-                    finish_day(game_progress, workdaytimer, app_state);
-                    timer.0 = Instant::now();
-                    return;
+					word.marked_to_despawn = true;
+					word.despawn_timer = Instant::now();
                 }
             }
         }
