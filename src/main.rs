@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, text::Text2dBounds};
 
 mod ending;
 mod home;
@@ -105,33 +105,61 @@ fn spawn_start(
         })
         .insert(StartMarker);
 
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::Auto,
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    bottom: Val::Px(50.0),
-                    left: Val::Px(WIDTH / 2.0 - 175.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "Press S to start",
-                TextStyle {
-                    font: assets.load("FiraMono-Medium.ttf"),
-                    font_size: 40.0,
-                    color: Color::WHITE,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        })
+    // commands
+    //     .spawn_bundle(TextBundle {
+    //         style: Style {
+    //             align_self: AlignSelf::Auto,
+    //             position_type: PositionType::Absolute,
+    //             position: Rect {
+    //                 bottom: Val::Px(50.0),
+    //                 left: Val::Px(WIDTH / 2.0 - 175.0),
+    //                 ..Default::default()
+    //             },
+    //             ..Default::default()
+    //         },
+    //         text: Text::with_section(
+    //             "Press S to start",
+    //             TextStyle {
+    //                 font: assets.load("FiraMono-Medium.ttf"),
+    //                 font_size: 40.0,
+    //                 color: Color::WHITE,
+    //             },
+    //             TextAlignment {
+    //                 horizontal: HorizontalAlign::Center,
+    //                 vertical: VerticalAlign::Center,
+    //                 ..Default::default()
+    //             },
+    //         ),
+    //         ..Default::default()
+    //     })
+    //     .insert(StartMarker);
+
+
+
+	commands.spawn_bundle(Text2dBundle {
+        text: Text::with_section(
+            "Press S to start",
+            TextStyle {
+				font: assets.load("FiraMono-Medium.ttf"),
+				font_size: 60.0,
+				color: Color::WHITE,
+			},
+            TextAlignment {
+				vertical: VerticalAlign::Center,
+				horizontal: HorizontalAlign::Center,
+			}
+        ),
+        text_2d_bounds: Text2dBounds {
+            // Wrap text in the rectangle
+            size: Size{width: WIDTH * 0.4, height: HEIGHT * 0.1},
+        },
+        transform: Transform::from_xyz(
+            0.0,
+            -(HEIGHT / 2.0 - HEIGHT * 0.07),
+            1.0,
+        ),
+        ..default()
+	})
         .insert(StartMarker);
 }
 
