@@ -414,6 +414,9 @@ fn correct_redness(
     let redness: Vec<Entity> = redness.iter().collect();
     if !word.is_empty() {
         let word = word.single();
+		if word.marked_to_despawn {
+			return;
+		}
         let redness_level = (word.timer.elapsed().as_millis()
             / ((word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset) / 10))
             as usize;

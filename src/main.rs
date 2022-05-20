@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::{prelude::*, text::Text2dBounds};
+use bevy::{core::FixedTimestep, prelude::*, text::Text2dBounds};
 
 mod ending;
 mod home;
@@ -9,15 +9,17 @@ mod info;
 mod jobs_list;
 mod modes;
 mod randomizer;
-mod work;
 mod start;
+mod work;
 
 const WIDTH: f32 = 1600.0;
 const HEIGHT: f32 = 1200.0;
 
+const TIMESTEP: f64 = 15.0 / 60.0;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
-	Loading,
+    Loading,
     Start,
     Home,
     Modes,
@@ -40,6 +42,14 @@ pub struct LoadedAssets(HashMap<String, Handle<Image>>);
 
 pub struct LoadedFonts(HashMap<String, Handle<Font>>);
 
+struct AssetsLoading(Vec<HandleUntyped>);
+
+#[derive(Component)]
+struct LoadingIndex(usize);
+
+#[derive(Component)]
+struct LoadingMarker;
+
 fn main() {
     App::new()
         .add_state(AppState::Loading)
@@ -49,14 +59,14 @@ fn main() {
             height: HEIGHT,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::BLACK))
+        // .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(DefaultPlugins)
         .add_plugin(home::Home)
         .add_plugin(jobs_list::JobsList)
         .add_plugin(modes::Modes)
         .add_plugin(work::Work)
         .add_plugin(ending::Ending)
-		.add_plugin(start::Start)
+        .add_plugin(start::Start)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(GameProgress {
             money: 0,
@@ -73,29 +83,50 @@ fn main() {
             customers: Vec::new(),
         })
         .insert_resource(LoadedAssets(HashMap::new()))
+        .insert_resource(LoadedFonts(HashMap::new()))
+        .insert_resource(AssetsLoading(Vec::new()))
+        .insert_resource(LoadingIndex(0))
         // .add_startup_system(load_assets)
         .add_system(hud::update_hud)
-		.add_system_set(
+        // .add_startup_system(spawn_loading_screen)
+        .add_system_set(
             SystemSet::on_enter(AppState::Loading)
-                .with_system(load_assets))
-		.add_system_set(
-			SystemSet::on_update(AppState::Loading)
-				.with_system(change_state)
+                // .with_system(load_assets.after("load"))
+                .with_system(load_font.label("font"))
+                .with_system(spawn_loading_screen.after("font").label("load")),
         )
+        .add_system_set(SystemSet::on_update(AppState::Loading).with_system(check_assets_ready))
+        .add_system_set(
+            SystemSet::on_update(AppState::Loading)
+                .with_run_criteria(FixedTimestep::step(TIMESTEP))
+                .with_system(update_loading_screen),
+        )
+        // .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_loading))
         .run()
+}
+
+fn load_font(mut fonts: ResMut<LoadedFonts>, asset_server: Res<AssetServer>) {
+    fonts.0.insert(
+        "FiraMono-Medium.ttf".to_string(),
+        asset_server.load(&"FiraMono-Medium.ttf".to_string()),
+    );
 }
 
 fn load_assets(
     mut assets: ResMut<LoadedAssets>,
+    mut fonts: ResMut<LoadedFonts>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
+    mut loading: ResMut<AssetsLoading>,
 ) {
+    // fonts.0.insert("FiraMono-Medium.ttf".to_string(), asset_server.load(&"FiraMono-Medium.ttf".to_string()));
+
     let names = [
         "logo.png",
         "home_new.png",
+        "bcman_bubble.png",
         "work_new.png",
         "customer_bubble.png",
-        "bcman_bubble.png",
         "customer_color.png",
         "customer_face_1.png",
         "customer_mask.png",
@@ -110,13 +141,84 @@ fn load_assets(
     ];
 
     for name in names {
-        assets.0.insert(name.to_string(), asset_server.load(name));
+        let handle = asset_server.load(name);
+        assets.0.insert(name.to_string(), handle.clone());
+        loading.0.push(handle.clone_untyped());
     }
     let music = asset_server.load("sounds/100_humanlong.ogg");
     audio.play(music);
-
 }
 
-fn change_state(mut app_state: ResMut<State<AppState>>) {
-	app_state.set(AppState::Start).unwrap();
+fn check_assets_ready(
+    server: Res<AssetServer>,
+    loading: Res<AssetsLoading>,
+    mut app_state: ResMut<State<AppState>>,
+) {
+    use bevy::asset::LoadState;
+
+    match server.get_group_load_state(loading.0.iter().map(|h| h.id)) {
+        LoadState::Loaded => {
+            app_state.set(AppState::Start).unwrap();
+        }
+        _ => (),
+    }
+}
+
+fn spawn_loading_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut load_fonts: ResMut<LoadedFonts>,
+	mut assets: ResMut<LoadedAssets>,
+    audio: Res<Audio>,
+	mut loading: ResMut<AssetsLoading>,
+) {
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text::with_section(
+                "Loading.",
+                TextStyle {
+                    // font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
+					font: asset_server.load("FiraMono-Medium.ttf"),
+                    font_size: 70.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Center,
+                },
+            ),
+            text_2d_bounds: Text2dBounds {
+                size: Size {
+                    width: WIDTH * 0.4,
+                    height: HEIGHT * 0.1,
+                },
+            },
+            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+            ..default()
+        })
+        .insert(LoadingMarker);
+
+    load_assets(assets, load_fonts, asset_server, audio, loading);
+}
+
+fn update_loading_screen(
+    mut text: Query<&mut Text, With<LoadingMarker>>,
+    mut index: ResMut<LoadingIndex>,
+) {
+    let dots = vec![".", "..", "..."];
+
+    if !text.is_empty() {
+        let mut text = text.single_mut();
+        text.sections[0].value = format!("Loading{}", dots[index.0]);
+        index.0 += 1;
+        if index.0 > 2 {
+            index.0 = 0;
+        }
+    }
+}
+
+fn cleanup_loading(mut commands: Commands, query: Query<Entity, With<LoadingMarker>>) {
+    for e in query.iter() {
+        commands.entity(e).despawn_recursive();
+    }
 }

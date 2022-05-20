@@ -24,6 +24,7 @@ fn spawn_start(
     assets: Res<AssetServer>,
     game_progress: ResMut<GameProgress>,
     load_assets: Res<LoadedAssets>,
+	load_fonts: Res<LoadedFonts>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
@@ -48,7 +49,7 @@ fn spawn_start(
         text: Text::with_section(
             "Press S to start",
             TextStyle {
-				font: assets.load("FiraMono-Medium.ttf"),
+				font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
 				font_size: 60.0,
 				color: Color::WHITE,
 			},

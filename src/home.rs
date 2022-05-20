@@ -22,6 +22,7 @@ fn spawn_home(
     assets: Res<AssetServer>,
     game_progress: Res<GameProgress>,
     load_assets: Res<LoadedAssets>,
+	load_fonts: Res<LoadedFonts>,
 ) {
     commands
         .spawn_bundle(SpriteBundle {
@@ -85,7 +86,7 @@ fn spawn_home(
 		text: Text::with_section(
 			game_progress.library.news[game_progress.day - 1].clone(),
 			TextStyle {
-				font: assets.load("FiraMono-Medium.ttf"),
+				font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
 				font_size: 30.0,
 				color: Color::BLACK,
 			},
@@ -145,7 +146,7 @@ fn spawn_home(
 		text: Text::with_section(
 			"Press M to buy modes, W to go to work",
 			TextStyle {
-				font: assets.load("FiraMono-Medium.ttf"),
+				font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
 				font_size: 40.0,
 				color: Color::WHITE,
 			},
