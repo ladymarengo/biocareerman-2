@@ -221,7 +221,6 @@ fn spawn_word(
     timer: Res<DelayTimer>,
     game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
-    mut phrase: Query<&mut Text, With<Phrase>>,
 ) {
     if game_progress.day >= 16 {
         return;
@@ -238,40 +237,6 @@ fn spawn_word(
     };
 
     if query.iter().collect::<Vec<Entity>>().len() == 0 && timer.0.elapsed().as_millis() > 500 {
-        let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
-        if phrase.is_empty() {
-            commands
-                .spawn_bundle(TextBundle {
-                    // transform: ,
-                    style: Style {
-                        align_self: AlignSelf::Center,
-                        position: Rect {
-                            top: Val::Px(HEIGHT / 2.0 - 300.0),
-                            left: Val::Px(500.0),
-                            ..Default::default()
-                        },
-                        ..default()
-                    },
-                    text: Text::with_section(
-                        game_progress.customers[phrase_index].task.to_string(),
-                        TextStyle {
-                            font: asset_server.load("FiraMono-Medium.ttf"),
-                            font_size: 26.0,
-                            color: Color::BLACK,
-                        },
-                        TextAlignment {
-                            horizontal: HorizontalAlign::Center,
-                            ..default()
-                        },
-                    ),
-                    ..default()
-                })
-                .insert(Phrase)
-                .insert(WorkMarker);
-        } else {
-            let mut phrase = phrase.single_mut();
-            phrase.sections[0].value = game_progress.customers[phrase_index].task.to_string();
-        }
 
         for e in redness.iter() {
             commands.entity(e).despawn_recursive();
@@ -282,36 +247,54 @@ fn spawn_word(
             min_len,
             max_len,
         );
-        commands
-            .spawn_bundle(TextBundle {
-                style: Style {
-                    align_self: AlignSelf::Center,
-                    position: Rect {
-                        top: Val::Px(HEIGHT / 2.0 - 200.0),
-                        left: Val::Px(200.0),
+
+		commands
+            .spawn_bundle(Text2dBundle {
+                text: Text {
+                    alignment: TextAlignment {
+                        vertical: VerticalAlign::Center,
+                        horizontal: HorizontalAlign::Left,
                         ..Default::default()
                     },
+                    sections: create_phrase_sections(&word, asset_server, &game_progress),
                     ..default()
                 },
-                text: Text {
-                    sections: vectorize_word(&word, asset_server),
-                    ..default()
+                text_2d_bounds: Text2dBounds {
+                    size: Size {
+                        width: WIDTH * 0.6,
+                        height: HEIGHT * 0.1,
+                    },
                 },
+                transform: Transform::from_xyz(
+                    -(WIDTH * 0.2),
+                    -(HEIGHT * 0.3),
+                    1.0,
+                ),
                 ..default()
             })
-            .insert(Word {
-                word: word,
-                index: 0,
-                errors: 0,
-                timer: Instant::now(),
-                started: false,
-            })
-            .insert(WorkMarker);
+			.insert(Word {
+				        word: word,
+				        index: 0,
+				        errors: 0,
+				        timer: Instant::now(),
+				        started: false,
+				    })
+			.insert(WorkMarker);
     }
 }
 
-fn vectorize_word(word: &str, asset_server: Res<AssetServer>) -> Vec<TextSection> {
+fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progress: &ResMut<GameProgress>) -> Vec<TextSection> {
     let mut sections = Vec::new();
+	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
+
+	sections.push(TextSection {
+		value: game_progress.customers[phrase_index].beginning.clone(),
+		style: TextStyle {
+			font: asset_server.load("FiraMono-Medium.ttf"),
+			font_size: 50.0,
+			color: Color::BLACK,
+		},
+	});
 
     for character in word.chars() {
         sections.push(TextSection {
@@ -323,6 +306,16 @@ fn vectorize_word(word: &str, asset_server: Res<AssetServer>) -> Vec<TextSection
             },
         })
     }
+
+	sections.push(TextSection {
+		value: game_progress.customers[phrase_index].end.clone(),
+		style: TextStyle {
+			font: asset_server.load("FiraMono-Medium.ttf"),
+			font_size: 50.0,
+			color: Color::BLACK,
+		},
+	});
+
     sections
 }
 
@@ -352,10 +345,10 @@ fn text_input(
                 if word.word.as_bytes()[word.index] == ev.char as u8
                     || if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char)
                 {
-                    text.sections[word.index].style.color = Color::DARK_GREEN;
+                    text.sections[word.index + 1].style.color = Color::DARK_GREEN;
                 } else {
                     word.errors += 1;
-                    text.sections[word.index].style.color = Color::RED;
+                    text.sections[word.index + 1].style.color = Color::RED;
                 }
                 word.index += 1;
 
