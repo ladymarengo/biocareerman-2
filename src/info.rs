@@ -45,14 +45,14 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
     game_progress.library.min_len = min_len;
     game_progress.library.max_len = max_len;
     game_progress.library.news = news;
-    game_progress.money = 0;
+    game_progress.money = 1000;
     game_progress.humanness = 100;
     game_progress.day = 1;
 	game_progress.modes = vec![
 		(Mode{
 			name: "Cyborg I".to_string(),
 			price: 200,
-			desc: "Eagle-eyed employee has a right for\none error without a penalty.".to_string(),
+			desc: "Eagle-eyed employee has a right for one error without a penalty.".to_string(),
 			humanness_impact: -10,
 		}, false),
 		(Mode{

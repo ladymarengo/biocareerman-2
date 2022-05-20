@@ -21,44 +21,25 @@ fn spawn_modes(
     assets: Res<AssetServer>,
     game_progress: ResMut<GameProgress>,
 ) {
-    let top: f32 = 300.0;
-    let left: f32 = 200.0;
-
-    // commands
-    //     .spawn_bundle(SpriteBundle {
-    //         texture: assets.load("modes.png"),
-    //         transform: Transform {
-    //             translation: Vec3::new(0.0, 0.0, 0.0),
-    //             ..Default::default()
-    //         },
-    //         sprite: Sprite {
-    //             custom_size: Some(Vec2::new(800.0, 600.0)),
-    //             ..Default::default()
-    //         },
-    //         ..Default::default()
-    //     })
-    // 	.insert(ModesMarker);
-
-    let offsets = vec![(0, 0), (300, 0), (600, 0), (0, 600), (300, 600), (600, 600)];
+    let boxwidth = WIDTH * 0.3;
+    let offsets = vec![
+        (-(WIDTH * 0.05 + boxwidth), HEIGHT * 0.25),
+        (-(WIDTH * 0.05 + boxwidth), 0.0),
+        (-(WIDTH * 0.05 + boxwidth), -HEIGHT * 0.25),
+        (WIDTH * 0.05, HEIGHT * 0.25),
+        (WIDTH * 0.05, 0.0),
+        (WIDTH * 0.05, -HEIGHT * 0.25),
+    ];
 
     for (index, (mode, purchased)) in game_progress.modes.iter().enumerate() {
         let purchase_prompt = format!("Press {} to buy this mode.", index + 1);
+
         commands
-            .spawn_bundle(TextBundle {
-                style: Style {
-                    align_self: AlignSelf::Auto,
-                    position_type: PositionType::Absolute,
-                    position: Rect {
-                        left: Val::Px(left + offsets[index].1 as f32),
-                        top: Val::Px(top + offsets[index].0 as f32),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                },
+            .spawn_bundle(Text2dBundle {
                 text: Text {
                     alignment: TextAlignment {
+                        vertical: VerticalAlign::Center,
                         horizontal: HorizontalAlign::Left,
-                        vertical: VerticalAlign::Top,
                         ..Default::default()
                     },
                     sections: vec![
@@ -99,7 +80,19 @@ fn spawn_modes(
                     ],
                     ..default()
                 },
-                ..Default::default()
+                text_2d_bounds: Text2dBounds {
+                    // Wrap text in the rectangle
+                    size: Size {
+                        width: boxwidth,
+                        height: HEIGHT * 0.1,
+                    },
+                },
+                transform: Transform::from_xyz(
+                    offsets[index].0 as f32,
+                    offsets[index].1 as f32,
+                    1.0,
+                ),
+                ..default()
             })
             .insert(ModeIndex(index))
             .insert(ModesMarker);
