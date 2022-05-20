@@ -87,43 +87,56 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 		}, false),];
 	game_progress.customers = vec![
 		CallCenterTask {
-			task: "I want refurbished parts for my ...".to_string(),
+			beginning: "I want refurbished parts for my ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "... is broken, could you fix it?".to_string(),
+			beginning: "My ".to_string(),
+			end: " is broken, could you fix it?".to_string(),
 		},
 		CallCenterTask {
-			task: "I would like to return ...".to_string(),
+			beginning: "I would like to return ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "Help! Emergency! We need at least 10 ... here!".to_string(),
+			beginning: "Help! Emergency! We need at least 10 ".to_string(),
+			end: " here!".to_string(),
 		},
 		CallCenterTask {
-			task: "Flat Apple Factory needs fresh ... for R&D".to_string(),
+			beginning: "Flat Apple Factory needs fresh ".to_string(),
+			end: " for R&D.".to_string(),
 		},
 		CallCenterTask {
-			task: "Pizza one plz, plenty ...".to_string(),
+			beginning: "Pizza one plz, plenty ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "Is this BiO Career Man on the phone?".to_string(),
+			beginning: "Hi! It's ".to_string(),
+			end: ". Is this BiO Career Man on the phone?".to_string(),
 		},
 		CallCenterTask {
-			task: "Gyd morni. Vi fine virus. Egcexute dis fail.".to_string(),
+			beginning: "Gyd morni. Vi fine virus. Egcexute dis fail ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "It's your destiny calling. What do you reckon, recon?".to_string(),
+			beginning: "It's your destiny calling. What do you reckon, recon? ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "My eagle-eye mod is broken. Can you bring me ...?".to_string(),
+			beginning: "My eagle-eye mod is broken. Can you bring me ".to_string(),
+			end: "?".to_string(),
 		},
 		CallCenterTask {
-			task: "Where to check-in for the orbital flight?".to_string(),
+			beginning: "Where to check-in for the orbital flight number ".to_string(),
+			end: "?".to_string(),
 		},
 		CallCenterTask {
-			task: "One teleportation, please. Address is ...".to_string(),
+			beginning: "One teleportation, please. Address is ".to_string(),
+			end: ".".to_string(),
 		},
 		CallCenterTask {
-			task: "Can you bring my organic nose, package id is ...".to_string(),
+			beginning: "Can you bring my organic nose, package id is ".to_string(),
+			end: "?".to_string(),
 		},
 	];
 }
@@ -143,5 +156,6 @@ pub struct Mode {
 }
 
 pub struct CallCenterTask {
-	pub task: String,
+	pub beginning: String,
+	pub end: String,
 }
