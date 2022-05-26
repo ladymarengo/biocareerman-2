@@ -15,7 +15,7 @@ mod work;
 const WIDTH: f32 = 1600.0;
 const HEIGHT: f32 = 1200.0;
 
-const TIMESTEP: f64 = 15.0 / 60.0;
+const TIMESTEP: f64 = 30.0 / 60.0;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
@@ -59,7 +59,7 @@ fn main() {
             height: HEIGHT,
             ..Default::default()
         })
-        // .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(DefaultPlugins)
         .add_plugin(home::Home)
         .add_plugin(jobs_list::JobsList)
@@ -86,14 +86,13 @@ fn main() {
         .insert_resource(LoadedFonts(HashMap::new()))
         .insert_resource(AssetsLoading(Vec::new()))
         .insert_resource(LoadingIndex(0))
-        // .add_startup_system(load_assets)
+        .add_startup_system(spawn_cameras)
         .add_system(hud::update_hud)
-        // .add_startup_system(spawn_loading_screen)
         .add_system_set(
             SystemSet::on_enter(AppState::Loading)
-                // .with_system(load_assets.after("load"))
-                .with_system(load_font.label("font"))
-                .with_system(spawn_loading_screen.after("font").label("load")),
+            .with_system(spawn_loading_screen)
+            .with_system(load_assets)
+            .with_system(load_font)
         )
         .add_system_set(SystemSet::on_update(AppState::Loading).with_system(check_assets_ready))
         .add_system_set(
@@ -101,7 +100,7 @@ fn main() {
                 .with_run_criteria(FixedTimestep::step(TIMESTEP))
                 .with_system(update_loading_screen),
         )
-        // .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_loading))
+        .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_loading))
         .run()
 }
 
@@ -114,13 +113,10 @@ fn load_font(mut fonts: ResMut<LoadedFonts>, asset_server: Res<AssetServer>) {
 
 fn load_assets(
     mut assets: ResMut<LoadedAssets>,
-    mut fonts: ResMut<LoadedFonts>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
     mut loading: ResMut<AssetsLoading>,
 ) {
-    // fonts.0.insert("FiraMono-Medium.ttf".to_string(), asset_server.load(&"FiraMono-Medium.ttf".to_string()));
-
     let names = [
         "logo.png",
         "home_new.png",
@@ -156,28 +152,20 @@ fn check_assets_ready(
 ) {
     use bevy::asset::LoadState;
 
-    match server.get_group_load_state(loading.0.iter().map(|h| h.id)) {
-        LoadState::Loaded => {
-            app_state.set(AppState::Start).unwrap();
-        }
-        _ => (),
+    if server.get_group_load_state(loading.0.iter().map(|h| h.id)) == LoadState::Loaded {
+        app_state.set(AppState::Start).unwrap();
     }
 }
 
 fn spawn_loading_screen(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut load_fonts: ResMut<LoadedFonts>,
-	mut assets: ResMut<LoadedAssets>,
-    audio: Res<Audio>,
-	mut loading: ResMut<AssetsLoading>,
 ) {
     commands
         .spawn_bundle(Text2dBundle {
             text: Text::with_section(
                 "Loading.",
                 TextStyle {
-                    // font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
 					font: asset_server.load("FiraMono-Medium.ttf"),
                     font_size: 70.0,
                     color: Color::WHITE,
@@ -198,7 +186,6 @@ fn spawn_loading_screen(
         })
         .insert(LoadingMarker);
 
-    load_assets(assets, load_fonts, asset_server, audio, loading);
 }
 
 fn update_loading_screen(
@@ -221,4 +208,9 @@ fn cleanup_loading(mut commands: Commands, query: Query<Entity, With<LoadingMark
     for e in query.iter() {
         commands.entity(e).despawn_recursive();
     }
+}
+
+fn spawn_cameras(mut commands: Commands) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(UiCameraBundle::default());
 }

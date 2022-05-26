@@ -26,8 +26,6 @@ fn spawn_start(
     load_assets: Res<LoadedAssets>,
 	load_fonts: Res<LoadedFonts>,
 ) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    commands.spawn_bundle(UiCameraBundle::default());
     info::create_library(game_progress);
 
     commands
