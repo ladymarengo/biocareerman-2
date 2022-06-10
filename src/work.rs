@@ -62,6 +62,7 @@ impl Plugin for Work {
             SystemSet::on_update(AppState::Work)
                 .with_system(text_input.label("print"))
                 .with_system(spawn_minigame.after("print"))
+				.with_system(letter_interpolation)
                 .with_system(correct_redness),
         )
         .add_system_set(SystemSet::on_exit(AppState::Work).with_system(cleanup_work));
@@ -341,7 +342,7 @@ fn spawn_letters(
 			value: c.to_string(),
 			style: TextStyle {
 				font: asset_server.load("FiraMono-Medium.ttf"),
-				font_size: 50.0,
+				font_size: if i != index {50.0} else {70.0},
 				color: if i != index {Color::GRAY} else {Color::BLUE},
 			},
 		});
@@ -513,6 +514,7 @@ fn text_input(
 						}
 						word.marked_to_despawn = true;
 						word.despawn_timer = Instant::now();
+						word.started = false;
 					}
 				}
 			}
@@ -531,7 +533,9 @@ fn text_input(
 					word.started = true;
 				}
 
+				text.sections[word.index].style.font_size = 50.0;
 				word.index = get_target_letter(&word.word);
+				text.sections[word.index].style.font_size = 70.0;
 				word.typed += 1;
 				text.sections[word.index].style.color = if word.letters == word.typed {Color::GRAY} else {Color::BLUE};
 
@@ -559,11 +563,23 @@ fn text_input(
 						game_progress.money += word.letters;
 					}
 					word.marked_to_despawn = true;
+					word.started = false;
 					word.despawn_timer = Instant::now();
 				}
 			}
 		}
     }
+}
+
+fn letter_interpolation(mut query: Query<(&mut Text, &Word)>, game_progress: Res<GameProgress>,) {
+	if !query.is_empty() {
+		let (mut text, word) = query.single_mut();
+		if let MiniGame::RANDOM_LETTERS = word.minigame {
+			if word.started && text.sections[word.index].style.font_size > 50.0 {
+				text.sections[word.index].style.font_size -= 0.1;
+			}
+		}
+	}
 }
 
 fn correct_redness(
