@@ -12,8 +12,8 @@ mod randomizer;
 mod start;
 mod work;
 
-const WIDTH: f32 =  800.0; // 1600.0;
-const HEIGHT: f32 = 600.0; // 1200.0;
+const WIDTH: f32 =  1600.0;
+const HEIGHT: f32 = 1200.0;
 
 const TIMESTEP: f64 = 30.0 / 60.0;
 
