@@ -25,3 +25,5 @@ change existing modes:
 - add customer phrases
 - add logs for the user
 - change news (add tips)
+- add after-work reflection on the home screen (thought bubble)
+- animations for assets
