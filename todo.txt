@@ -1,0 +1,27 @@
+- implement logging system
+- research user behavior
+- balance money
+- dynamic font size
+
+- change modes:
+ideas for new modes:
+	- slow down time (longer workday)
+	- more time for task
+	- partly disappear
+
+remove modes:
+	- specific letters
+
+change existing modes:
+	- dynamic additional errors (based on length and minigame and maybe difficulty)
+
+- arts for mods ideas:
+	- antenna
+	- earpiece
+	- lightbulb
+	- drone above the shoulder
+
+- add pictures to mods catalogue
+- add customer phrases
+- add logs for the user
+- change news (add tips)
