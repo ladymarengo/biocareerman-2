@@ -82,7 +82,7 @@ fn spawn_minigame(
 	if query.iter().collect::<Vec<Entity>>().len() == 0 {
 		match minigame {
 			0 => spawn_word(commands, query, asset_server, game_progress, redness),
-			1 => spawn_letters(commands, query, asset_server, game_progress),
+			1 => spawn_letters(commands, query, asset_server, game_progress, redness),
 			_ => (),
 		}
 	}
@@ -325,11 +325,16 @@ fn spawn_letters(
     query: Query<Entity, With<Word>>,
 	asset_server: Res<AssetServer>,
 	game_progress: ResMut<GameProgress>,
+    redness: Query<Entity, With<Redness>>,
 ) {
 	let mut sections = Vec::new();
 	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_letter.len());
 	let phrase = game_progress.customers.random_letter[phrase_index].clone();
 	let index = get_target_letter(&phrase);
+
+	for e in redness.iter() {
+		commands.entity(e).despawn_recursive();
+	}
 
 	for (i, c) in phrase.chars().enumerate() {
 		sections.push(TextSection {
@@ -520,6 +525,12 @@ fn text_input(
 					text.sections[word.index].style.color = Color::RED;
 					word.errors += 1;
 				}
+
+				if word.typed == 0 {
+					word.timer = Instant::now();
+					word.started = true;
+				}
+
 				word.index = get_target_letter(&word.word);
 				word.typed += 1;
 				text.sections[word.index].style.color = if word.letters == word.typed {Color::GRAY} else {Color::BLUE};
@@ -529,7 +540,7 @@ fn text_input(
 				if word.letters == word.typed {
 					if word.errors <= 0 + game_progress.modes[0].1 as usize
 						&& word.timer.elapsed().as_millis()
-							< word.letters as u128 * 500 - game_progress.day as u128 * 15
+							< word.letters as u128 * 600 - game_progress.day as u128 * 15
 								+ mode_offset
 					{
 						text.sections[word.word.len()].style.color = Color::DARK_GREEN;
@@ -537,7 +548,7 @@ fn text_input(
 						game_progress.money += word.letters * word.letters;
 					} else if word.errors > 1 + game_progress.modes[0].1 as usize
 						|| word.timer.elapsed().as_millis()
-							> word.letters as u128 * 1000 - game_progress.day as u128 * 30
+							> word.letters as u128 * 1200 - game_progress.day as u128 * 30
 								+ mode_offset
 					{
 						text.sections[word.word.len()].style.color = Color::RED;

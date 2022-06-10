@@ -200,13 +200,13 @@ fn update_loading_screen(
     mut text: Query<&mut Text, With<LoadingMarker>>,
     mut index: ResMut<LoadingIndex>,
 ) {
-    let dots = vec![".", "..", "..."];
+    let dots = vec!["", ".", "..", "..."];
 
     if !text.is_empty() {
         let mut text = text.single_mut();
         text.sections[0].value = format!("Loading{}", dots[index.0]);
         index.0 += 1;
-        if index.0 > 2 {
+        if index.0 > 3 {
             index.0 = 0;
         }
     }
