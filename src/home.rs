@@ -22,6 +22,7 @@ fn spawn_home(
     assets: Res<AssetServer>,
     game_progress: Res<GameProgress>,
     load_assets: Res<LoadedAssets>,
+	load_fonts: Res<LoadedFonts>,
 ) {
     commands
         .spawn_bundle(SpriteBundle {
@@ -42,7 +43,7 @@ fn spawn_home(
         .spawn_bundle(SpriteBundle {
             texture: load_assets.0.get("bcman_bubble.png").unwrap().clone(),
             transform: Transform {
-                translation: Vec3::new(-700.0, -350.0, 0.0),
+                translation: Vec3::new(-(WIDTH * 0.45), -(HEIGHT * 0.3), 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
@@ -53,34 +54,59 @@ fn spawn_home(
         })
         .insert(HomeMarker);
 
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::Auto,
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    top: Val::Px(200.0),
-                    left: Val::Px(100.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                game_progress.library.news[game_progress.day - 1].clone(),
-                TextStyle {
-                    font: assets.load("FiraMono-Medium.ttf"),
-                    font_size: 30.0,
-                    color: Color::BLACK,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Left,
-                    vertical: VerticalAlign::Center,
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(HomeMarker);
+    // commands
+    //     .spawn_bundle(TextBundle {
+    //         style: Style {
+    //             align_self: AlignSelf::Auto,
+    //             position_type: PositionType::Absolute,
+    //             position: Rect {
+    //                 top: Val::Px(200.0),
+    //                 left: Val::Px(100.0),
+    //                 ..Default::default()
+    //             },
+    //             ..Default::default()
+    //         },
+    //         text: Text::with_section(
+    //             game_progress.library.news[game_progress.day - 1].clone(),
+    //             TextStyle {
+    //                 font: assets.load("FiraMono-Medium.ttf"),
+    //                 font_size: 30.0,
+    //                 color: Color::BLACK,
+    //             },
+    //             TextAlignment {
+    //                 horizontal: HorizontalAlign::Left,
+    //                 vertical: VerticalAlign::Center,
+    //                 ..Default::default()
+    //             },
+    //         ),
+    //         ..Default::default()
+    //     })
+
+	commands.spawn_bundle(Text2dBundle {
+		text: Text::with_section(
+			game_progress.library.news[game_progress.day - 1].clone(),
+			TextStyle {
+				font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
+				font_size: 30.0,
+				color: Color::BLACK,
+			},
+			TextAlignment {
+				vertical: VerticalAlign::Center,
+				horizontal: HorizontalAlign::Center,
+			}
+		),
+		text_2d_bounds: Text2dBounds {
+			// Wrap text in the rectangle
+			size: Size{width: WIDTH * 0.46, height: HEIGHT * 0.15},
+		},
+		transform: Transform::from_xyz(
+			-(WIDTH * 0.215),
+			HEIGHT * 0.25,
+			1.0,
+		),
+		..default()
+	})
+	.insert(HomeMarker);
 
     if game_progress.humanness < 90 {
         commands
@@ -116,34 +142,31 @@ fn spawn_home(
             .insert(HomeMarker);
     }
 
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::Auto,
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    bottom: Val::Px(50.0),
-                    left: Val::Px(WIDTH / 2.0 - 350.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "Press M to buy modes, W to go to work",
-                TextStyle {
-                    font: assets.load("FiraMono-Medium.ttf"),
-                    font_size: 40.0,
-                    color: Color::WHITE,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(HomeMarker);
+	commands.spawn_bundle(Text2dBundle {
+		text: Text::with_section(
+			"Press M to buy modes, W to go to work",
+			TextStyle {
+				font: load_fonts.0.get("FiraMono-Medium.ttf").unwrap().clone(),
+				font_size: 40.0,
+				color: Color::WHITE,
+			},
+			TextAlignment {
+				vertical: VerticalAlign::Center,
+				horizontal: HorizontalAlign::Center,
+			}
+		),
+		text_2d_bounds: Text2dBounds {
+			// Wrap text in the rectangle
+			size: Size{width: WIDTH * 0.8, height: HEIGHT * 0.1},
+		},
+		transform: Transform::from_xyz(
+			0.0,
+			-(HEIGHT / 2.0 - HEIGHT * 0.05),
+			1.0,
+		),
+		..default()
+	})
+	.insert(HomeMarker);
 }
 
 fn home_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {

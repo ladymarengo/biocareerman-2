@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::*;
+use bevy::{core::FixedTimestep, prelude::*, text::Text2dBounds};
 
 mod ending;
 mod home;
@@ -9,19 +9,28 @@ mod info;
 mod jobs_list;
 mod modes;
 mod randomizer;
+mod start;
 mod work;
 
-const WIDTH: f32 = 1600.0;
+const WIDTH: f32 =  1600.0;
 const HEIGHT: f32 = 1200.0;
+
+const TIMESTEP: f64 = 30.0 / 60.0;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
+    Loading,
     Start,
     Home,
     Modes,
     JobsList,
     Work,
     Ending,
+}
+
+pub struct Customers {
+	random_word: Vec<info::CallCenterTask>,
+	random_letter: Vec<String>,
 }
 
 pub struct GameProgress {
@@ -31,17 +40,24 @@ pub struct GameProgress {
     max_days: usize,
     library: info::Library,
     modes: Vec<(info::Mode, bool)>,
-    customers: Vec<info::CallCenterTask>,
+    customers: Customers,
 }
-
-#[derive(Component)]
-pub struct StartMarker;
 
 pub struct LoadedAssets(HashMap<String, Handle<Image>>);
 
+pub struct LoadedFonts(HashMap<String, Handle<Font>>);
+
+struct AssetsLoading(Vec<HandleUntyped>);
+
+#[derive(Component)]
+struct LoadingIndex(usize);
+
+#[derive(Component)]
+struct LoadingMarker;
+
 fn main() {
     App::new()
-        .add_state(AppState::Start)
+        .add_state(AppState::Loading)
         .insert_resource(WindowDescriptor {
             title: "BiO Career Man II".to_string(),
             width: WIDTH,
@@ -55,6 +71,7 @@ fn main() {
         .add_plugin(modes::Modes)
         .add_plugin(work::Work)
         .add_plugin(ending::Ending)
+        .add_plugin(start::Start)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(GameProgress {
             money: 0,
@@ -68,108 +85,52 @@ fn main() {
                 news: Vec::new(),
             },
             modes: Vec::new(),
-            customers: Vec::new(),
+            customers: Customers {
+				random_word: Vec::new(),
+				random_letter: Vec::new(),
+			},
         })
         .insert_resource(LoadedAssets(HashMap::new()))
-        .add_startup_system(load_assets)
-        .add_system_set(SystemSet::on_enter(AppState::Start).with_system(spawn_start))
-        .add_system_set(SystemSet::on_update(AppState::Start).with_system(start_input))
-        .add_system_set(SystemSet::on_exit(AppState::Start).with_system(cleanup_start))
-        // .add_system(change_state)
+        .insert_resource(LoadedFonts(HashMap::new()))
+        .insert_resource(AssetsLoading(Vec::new()))
+        .insert_resource(LoadingIndex(0))
+        .add_startup_system(spawn_cameras)
         .add_system(hud::update_hud)
+        .add_system_set(
+            SystemSet::on_enter(AppState::Loading)
+            .with_system(spawn_loading_screen)
+            .with_system(load_assets)
+            .with_system(load_font)
+        )
+        .add_system_set(SystemSet::on_update(AppState::Loading).with_system(check_assets_ready))
+        .add_system_set(
+            SystemSet::on_update(AppState::Loading)
+                .with_run_criteria(FixedTimestep::step(TIMESTEP))
+                .with_system(update_loading_screen),
+        )
+        .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_loading))
         .run()
 }
 
-fn spawn_start(
-    mut commands: Commands,
-    assets: Res<AssetServer>,
-    game_progress: ResMut<GameProgress>,
-    load_assets: Res<LoadedAssets>,
-) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    commands.spawn_bundle(UiCameraBundle::default());
-    info::create_library(game_progress);
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: load_assets.0.get("logo.png").unwrap().clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(StartMarker);
-
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::Auto,
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    bottom: Val::Px(50.0),
-                    left: Val::Px(WIDTH / 2.0 - 175.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "Press S to start",
-                TextStyle {
-                    font: assets.load("FiraMono-Medium.ttf"),
-                    font_size: 40.0,
-                    color: Color::WHITE,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(StartMarker);
+fn load_font(mut fonts: ResMut<LoadedFonts>, asset_server: Res<AssetServer>) {
+    fonts.0.insert(
+        "FiraMono-Medium.ttf".to_string(),
+        asset_server.load(&"FiraMono-Medium.ttf".to_string()),
+    );
 }
-
-fn cleanup_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {
-    for e in query.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-}
-
-fn start_input(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-    if keys.just_pressed(KeyCode::S) {
-        app_state.set(AppState::Home).unwrap();
-    }
-}
-
-// fn change_state(keys: Res<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
-//     if keys.just_pressed(KeyCode::Space) {
-//         match app_state.current() {
-//             AppState::Start => app_state.set(AppState::Home).unwrap(),
-//             AppState::Home => app_state.set(AppState::Modes).unwrap(),
-//             AppState::Modes => app_state.set(AppState::JobsList).unwrap(),
-//             AppState::JobsList => app_state.set(AppState::Work).unwrap(),
-//             AppState::Work => app_state.set(AppState::Ending).unwrap(),
-//             AppState::Ending => app_state.set(AppState::Start).unwrap(),
-//         }
-//     }
-// }
 
 fn load_assets(
     mut assets: ResMut<LoadedAssets>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
+    mut loading: ResMut<AssetsLoading>,
 ) {
     let names = [
+        "logo.png",
         "home_new.png",
+        "bcman_bubble.png",
         "work_new.png",
         "customer_bubble.png",
-        "bcman_bubble.png",
         "customer_color.png",
         "customer_face_1.png",
         "customer_mask.png",
@@ -181,12 +142,83 @@ fn load_assets(
         "Bahamas.png",
         "dumpster.png",
         "newfarm.png",
-        "logo.png",
     ];
 
     for name in names {
-        assets.0.insert(name.to_string(), asset_server.load(name));
+        let handle = asset_server.load(name);
+        assets.0.insert(name.to_string(), handle.clone());
+        loading.0.push(handle.clone_untyped());
     }
     let music = asset_server.load("sounds/100_humanlong.ogg");
     audio.play(music);
+}
+
+fn check_assets_ready(
+    server: Res<AssetServer>,
+    loading: Res<AssetsLoading>,
+    mut app_state: ResMut<State<AppState>>,
+) {
+    use bevy::asset::LoadState;
+
+    if server.get_group_load_state(loading.0.iter().map(|h| h.id)) == LoadState::Loaded {
+        app_state.set(AppState::Start).unwrap();
+    }
+}
+
+fn spawn_loading_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text::with_section(
+                "Loading.",
+                TextStyle {
+					font: asset_server.load("FiraMono-Medium.ttf"),
+                    font_size: 70.0,
+                    color: Color::WHITE,
+                },
+                TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Center,
+                },
+            ),
+            text_2d_bounds: Text2dBounds {
+                size: Size {
+                    width: WIDTH * 0.4,
+                    height: HEIGHT * 0.1,
+                },
+            },
+            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+            ..default()
+        })
+        .insert(LoadingMarker);
+
+}
+
+fn update_loading_screen(
+    mut text: Query<&mut Text, With<LoadingMarker>>,
+    mut index: ResMut<LoadingIndex>,
+) {
+    let dots = vec!["", ".", "..", "..."];
+
+    if !text.is_empty() {
+        let mut text = text.single_mut();
+        text.sections[0].value = format!("Loading{}", dots[index.0]);
+        index.0 += 1;
+        if index.0 > 3 {
+            index.0 = 0;
+        }
+    }
+}
+
+fn cleanup_loading(mut commands: Commands, query: Query<Entity, With<LoadingMarker>>) {
+    for e in query.iter() {
+        commands.entity(e).despawn_recursive();
+    }
+}
+
+fn spawn_cameras(mut commands: Commands) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(UiCameraBundle::default());
 }
