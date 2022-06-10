@@ -85,7 +85,7 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 			desc: "Restores some of your humanness.".to_string(),
 			humanness_impact: 25,
 		}, false),];
-	game_progress.customers = vec![
+	game_progress.customers.random_word = vec![
 		CallCenterTask {
 			beginning: "I want refurbished parts for my ".to_string(),
 			end: ".".to_string(),
@@ -138,6 +138,10 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
 			beginning: "Can you bring my organic nose, package id is ".to_string(),
 			end: "?".to_string(),
 		},
+	];
+	game_progress.customers.random_letter = vec![
+		"Flat Apple Factory!".to_string(),
+		"I would like to order a pizza with GMO watermelons.".to_string(),
 	];
 }
 

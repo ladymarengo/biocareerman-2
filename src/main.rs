@@ -12,8 +12,8 @@ mod randomizer;
 mod start;
 mod work;
 
-const WIDTH: f32 = 1600.0;
-const HEIGHT: f32 = 1200.0;
+const WIDTH: f32 =  800.0; // 1600.0;
+const HEIGHT: f32 = 600.0; // 1200.0;
 
 const TIMESTEP: f64 = 30.0 / 60.0;
 
@@ -28,6 +28,11 @@ pub enum AppState {
     Ending,
 }
 
+pub struct Customers {
+	random_word: Vec<info::CallCenterTask>,
+	random_letter: Vec<String>,
+}
+
 pub struct GameProgress {
     money: usize,
     humanness: i32,
@@ -35,7 +40,7 @@ pub struct GameProgress {
     max_days: usize,
     library: info::Library,
     modes: Vec<(info::Mode, bool)>,
-    customers: Vec<info::CallCenterTask>,
+    customers: Customers,
 }
 
 pub struct LoadedAssets(HashMap<String, Handle<Image>>);
@@ -80,7 +85,10 @@ fn main() {
                 news: Vec::new(),
             },
             modes: Vec::new(),
-            customers: Vec::new(),
+            customers: Customers {
+				random_word: Vec::new(),
+				random_letter: Vec::new(),
+			},
         })
         .insert_resource(LoadedAssets(HashMap::new()))
         .insert_resource(LoadedFonts(HashMap::new()))

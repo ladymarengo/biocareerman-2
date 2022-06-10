@@ -34,6 +34,13 @@ struct Word {
     started: bool,
 	marked_to_despawn: bool,
 	despawn_timer: Instant,
+	minigame: MiniGame,
+}
+
+enum MiniGame {
+	RANDOM_WORD,
+	RANDOM_LETTERS,
+	COUNT,
 }
 
 #[derive(Component)]
@@ -43,6 +50,7 @@ impl Plugin for Work {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_enter(AppState::Work)
+				.with_system(spawn_minigame)
                 .with_system(spawn_work)
                 .with_system(spawn_word),
         )
@@ -56,6 +64,26 @@ impl Plugin for Work {
         )
         .add_system_set(SystemSet::on_exit(AppState::Work).with_system(cleanup_work));
     }
+}
+
+fn spawn_minigame(
+	mut commands: Commands,
+    query: Query<Entity, With<Word>>,
+    asset_server: Res<AssetServer>,
+    game_progress: ResMut<GameProgress>,
+    redness: Query<Entity, With<Redness>>,
+) {
+	let mut rng = ::rand::thread_rng();
+    let minigame: i32 = rng.gen_range(0..MiniGame::COUNT as i32);
+	// println!("{} {}", MiniGame::COUNT as i32, minigame);
+
+	if query.iter().collect::<Vec<Entity>>().len() == 0 {
+		match minigame {
+			0 => spawn_word(commands, query, asset_server, game_progress, redness),
+			1 => spawn_letters(commands, query, asset_server, game_progress),
+			_ => (),
+		}
+	}
 }
 
 fn spawn_work(
@@ -282,17 +310,75 @@ fn spawn_word(
 				        started: false,
 						marked_to_despawn: false,
 						despawn_timer: Instant::now(),
+						minigame: MiniGame::RANDOM_WORD,
 				    })
 			.insert(WorkMarker);
     }
 }
 
+fn spawn_letters(
+    mut commands: Commands,
+    query: Query<Entity, With<Word>>,
+	asset_server: Res<AssetServer>,
+	game_progress: ResMut<GameProgress>,
+) {
+	let mut sections = Vec::new();
+	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_letter.len());
+	let phrase = game_progress.customers.random_letter[phrase_index].clone();
+
+	for c in phrase.chars() {
+		sections.push(TextSection {
+			value: c.to_string(),
+			style: TextStyle {
+				font: asset_server.load("FiraMono-Medium.ttf"),
+				font_size: 50.0,
+				color: Color::GRAY,
+			},
+		});
+	}
+	commands
+		.spawn_bundle(Text2dBundle {
+			text: Text {
+				alignment: TextAlignment {
+					vertical: VerticalAlign::Center,
+					horizontal: HorizontalAlign::Left,
+					..Default::default()
+				},
+				sections,
+				..default()
+			},
+			text_2d_bounds: Text2dBounds {
+				size: Size {
+					width: WIDTH * 0.6,
+					height: HEIGHT * 0.1,
+				},
+			},
+			transform: Transform::from_xyz(
+				-(WIDTH * 0.2),
+				-(HEIGHT * 0.3),
+				1.0,
+			),
+			..default()
+		})
+		.insert(Word {
+					word: phrase,
+					index: 0,
+					errors: 0,
+					timer: Instant::now(),
+					started: false,
+					marked_to_despawn: false,
+					despawn_timer: Instant::now(),
+					minigame: MiniGame::RANDOM_LETTERS,
+				})
+		.insert(WorkMarker);
+}
+
 fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progress: &ResMut<GameProgress>) -> Vec<TextSection> {
     let mut sections = Vec::new();
-	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.len());
+	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_word.len());
 
 	sections.push(TextSection {
-		value: game_progress.customers[phrase_index].beginning.clone(),
+		value: game_progress.customers.random_word[phrase_index].beginning.clone(),
 		style: TextStyle {
 			font: asset_server.load("FiraMono-Medium.ttf"),
 			font_size: 50.0,
@@ -312,7 +398,7 @@ fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progr
     }
 
 	sections.push(TextSection {
-		value: game_progress.customers[phrase_index].end.clone(),
+		value: game_progress.customers.random_word[phrase_index].end.clone(),
 		style: TextStyle {
 			font: asset_server.load("FiraMono-Medium.ttf"),
 			font_size: 50.0,
