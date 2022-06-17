@@ -24,7 +24,6 @@ pub struct DelayTimer(Instant);
 #[derive(Component)]
 pub struct WorkDayTimer(Instant);
 
-
 #[derive(Component)]
 struct Word {
     word: String,
@@ -32,18 +31,18 @@ struct Word {
     errors: usize,
     timer: Instant,
     started: bool,
-	marked_to_despawn: bool,
-	despawn_timer: Instant,
-	minigame: MiniGame,
-	letters: usize,
-	typed: usize,
+    marked_to_despawn: bool,
+    despawn_timer: Instant,
+    minigame: MiniGame,
+    letters: usize,
+    typed: usize,
 }
 
 enum MiniGame {
-	RANDOM_WORD,
-	RANDOM_LETTERS,
-	RANDOM_WORD_DISAPPEAR,
-	COUNT,
+    RANDOM_WORD,
+    RANDOM_LETTERS,
+    RANDOM_WORD_DISAPPEAR,
+    COUNT,
 }
 
 #[derive(Component)]
@@ -53,9 +52,8 @@ impl Plugin for Work {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_enter(AppState::Work)
-				// .with_system(spawn_minigame)
-                .with_system(spawn_work)
-                //.with_system(spawn_word),
+                // .with_system(spawn_minigame)
+                .with_system(spawn_work), //.with_system(spawn_word),
         )
         .insert_resource(DelayTimer(Instant::now()))
         .insert_resource(WorkDayTimer(Instant::now()))
@@ -63,7 +61,7 @@ impl Plugin for Work {
             SystemSet::on_update(AppState::Work)
                 .with_system(text_input.label("print"))
                 .with_system(spawn_minigame.after("print"))
-				.with_system(letter_interpolation)
+                .with_system(letter_interpolation)
                 .with_system(correct_redness),
         )
         .add_system_set(SystemSet::on_exit(AppState::Work).with_system(cleanup_work));
@@ -71,24 +69,24 @@ impl Plugin for Work {
 }
 
 fn spawn_minigame(
-	mut commands: Commands,
+    mut commands: Commands,
     query: Query<Entity, With<Word>>,
     asset_server: Res<AssetServer>,
     game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
 ) {
-	let mut rng = ::rand::thread_rng();
+    let mut rng = ::rand::thread_rng();
     let minigame: i32 = rng.gen_range(0..MiniGame::COUNT as i32);
-	// println!("{} {}", MiniGame::COUNT as i32, minigame);
+    // println!("{} {}", MiniGame::COUNT as i32, minigame);
 
-	if query.iter().collect::<Vec<Entity>>().len() == 0 {
-		match minigame {
-			0 => spawn_word(commands, query, asset_server, game_progress, redness, false),
-			1 => spawn_letters(commands, query, asset_server, game_progress, redness),
-			2 => spawn_word(commands, query, asset_server, game_progress, redness, true),
-			_ => (),
-		}
-	}
+    if query.iter().collect::<Vec<Entity>>().len() == 0 {
+        match minigame {
+            0 => spawn_word(commands, query, asset_server, game_progress, redness, false),
+            1 => spawn_letters(commands, query, asset_server, game_progress, redness),
+            2 => spawn_word(commands, query, asset_server, game_progress, redness, true),
+            _ => (),
+        }
+    }
 }
 
 fn spawn_work(
@@ -256,24 +254,23 @@ fn spawn_word(
     asset_server: Res<AssetServer>,
     game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
-	disappear: bool,
+    disappear: bool,
 ) {
     if game_progress.day >= 16 {
         return;
     }
     let min_len = if game_progress.modes[3].1 {
-        min(4, game_progress.library.min_len[game_progress.day - 1])
+        min(4, game_progress.library.len[game_progress.day - 1].min)
     } else {
-        game_progress.library.min_len[game_progress.day - 1]
+        game_progress.library.len[game_progress.day - 1].min
     };
     let max_len = if game_progress.modes[3].1 {
-        min(4, game_progress.library.max_len[game_progress.day - 1])
+        min(4, game_progress.library.len[game_progress.day - 1].max)
     } else {
-        game_progress.library.max_len[game_progress.day - 1]
+        game_progress.library.len[game_progress.day - 1].max
     };
 
     if query.iter().collect::<Vec<Entity>>().len() == 0 {
-
         for e in redness.iter() {
             commands.entity(e).despawn_recursive();
         }
@@ -284,7 +281,7 @@ fn spawn_word(
             max_len,
         );
 
-		commands
+        commands
             .spawn_bundle(Text2dBundle {
                 text: Text {
                     alignment: TextAlignment {
@@ -301,124 +298,128 @@ fn spawn_word(
                         height: HEIGHT * 0.1,
                     },
                 },
-                transform: Transform::from_xyz(
-                    -(WIDTH * 0.2),
-                    -(HEIGHT * 0.3),
-                    1.0,
-                ),
+                transform: Transform::from_xyz(-(WIDTH * 0.2), -(HEIGHT * 0.3), 1.0),
                 ..default()
             })
-			.insert(Word {
-				        word: word,
-				        index: 0,
-				        errors: 0,
-				        timer: Instant::now(),
-				        started: false,
-						marked_to_despawn: false,
-						despawn_timer: Instant::now(),
-						minigame: if !disappear {MiniGame::RANDOM_WORD} else {MiniGame::RANDOM_WORD_DISAPPEAR},
-						letters: 0,
-						typed: 0
-				    })
-			.insert(WorkMarker);
+            .insert(Word {
+                word: word,
+                index: 0,
+                errors: 0,
+                timer: Instant::now(),
+                started: false,
+                marked_to_despawn: false,
+                despawn_timer: Instant::now(),
+                minigame: if !disappear {
+                    MiniGame::RANDOM_WORD
+                } else {
+                    MiniGame::RANDOM_WORD_DISAPPEAR
+                },
+                letters: 0,
+                typed: 0,
+            })
+            .insert(WorkMarker);
     }
 }
 
 fn spawn_letters(
     mut commands: Commands,
     query: Query<Entity, With<Word>>,
-	asset_server: Res<AssetServer>,
-	game_progress: ResMut<GameProgress>,
+    asset_server: Res<AssetServer>,
+    game_progress: ResMut<GameProgress>,
     redness: Query<Entity, With<Redness>>,
 ) {
-	let mut sections = Vec::new();
-	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_letter.len());
-	let phrase = game_progress.customers.random_letter[phrase_index].clone();
-	let index = get_target_letter(&phrase);
+    let mut sections = Vec::new();
+    let phrase_index =
+        ::rand::thread_rng().gen_range(0..game_progress.customers.random_letter.len());
+    let phrase = game_progress.customers.random_letter[phrase_index].clone();
+    let index = get_target_letter(&phrase);
 
-	for e in redness.iter() {
-		commands.entity(e).despawn_recursive();
-	}
+    for e in redness.iter() {
+        commands.entity(e).despawn_recursive();
+    }
 
-	for (i, c) in phrase.chars().enumerate() {
-		sections.push(TextSection {
-			value: c.to_string(),
-			style: TextStyle {
-				font: asset_server.load("FiraMono-Medium.ttf"),
-				font_size: if i != index {50.0} else {70.0},
-				color: if i != index {Color::GRAY} else {Color::BLUE},
-			},
-		});
-	}
-	sections.push(TextSection {
-		value: "".to_string(),
-		style: TextStyle {
-			font: asset_server.load("FiraMono-Medium.ttf"),
-			font_size: 50.0,
-			color: Color::BLACK,
-		},
-	});
-	commands
-		.spawn_bundle(Text2dBundle {
-			text: Text {
-				alignment: TextAlignment {
-					vertical: VerticalAlign::Center,
-					horizontal: HorizontalAlign::Left,
-					..Default::default()
-				},
-				sections,
-				..default()
-			},
-			text_2d_bounds: Text2dBounds {
-				size: Size {
-					width: WIDTH * 0.6,
-					height: HEIGHT * 0.1,
-				},
-			},
-			transform: Transform::from_xyz(
-				-(WIDTH * 0.2),
-				-(HEIGHT * 0.3),
-				1.0,
-			),
-			..default()
-		})
-		.insert(Word {
-					word: phrase.clone(),
-					index,
-					errors: 0,
-					timer: Instant::now(),
-					started: false,
-					marked_to_despawn: false,
-					despawn_timer: Instant::now(),
-					minigame: MiniGame::RANDOM_LETTERS,
-					letters: ::rand::thread_rng().gen_range(game_progress.library.min_len[game_progress.day - 1]..=game_progress.library.max_len[game_progress.day - 1]),
-					typed: 0,
-				})
-		.insert(WorkMarker);
+    for (i, c) in phrase.chars().enumerate() {
+        sections.push(TextSection {
+            value: c.to_string(),
+            style: TextStyle {
+                font: asset_server.load("FiraMono-Medium.ttf"),
+                font_size: if i != index { 50.0 } else { 70.0 },
+                color: if i != index { Color::GRAY } else { Color::BLUE },
+            },
+        });
+    }
+    sections.push(TextSection {
+        value: "".to_string(),
+        style: TextStyle {
+            font: asset_server.load("FiraMono-Medium.ttf"),
+            font_size: 50.0,
+            color: Color::BLACK,
+        },
+    });
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                alignment: TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Left,
+                    ..Default::default()
+                },
+                sections,
+                ..default()
+            },
+            text_2d_bounds: Text2dBounds {
+                size: Size {
+                    width: WIDTH * 0.6,
+                    height: HEIGHT * 0.1,
+                },
+            },
+            transform: Transform::from_xyz(-(WIDTH * 0.2), -(HEIGHT * 0.3), 1.0),
+            ..default()
+        })
+        .insert(Word {
+            word: phrase.clone(),
+            index,
+            errors: 0,
+            timer: Instant::now(),
+            started: false,
+            marked_to_despawn: false,
+            despawn_timer: Instant::now(),
+            minigame: MiniGame::RANDOM_LETTERS,
+            letters: ::rand::thread_rng().gen_range(
+                game_progress.library.len[game_progress.day - 1].min
+                    ..=game_progress.library.len[game_progress.day - 1].max,
+            ),
+            typed: 0,
+        })
+        .insert(WorkMarker);
 }
 
 fn get_target_letter(phrase: &str) -> usize {
-	let mut index: usize = ::rand::thread_rng().gen_range(0..phrase.len());
+    let mut index: usize = ::rand::thread_rng().gen_range(0..phrase.len());
 
-	while !phrase.chars().collect::<Vec<char>>()[index].is_alphanumeric() {
-		index = ::rand::thread_rng().gen_range(0..phrase.len());
-	}
+    while !phrase.chars().collect::<Vec<char>>()[index].is_alphanumeric() {
+        index = ::rand::thread_rng().gen_range(0..phrase.len());
+    }
 
-	index
+    index
 }
 
-fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progress: &ResMut<GameProgress>) -> Vec<TextSection> {
+fn create_phrase_sections(
+    word: &str,
+    asset_server: Res<AssetServer>,
+    game_progress: &ResMut<GameProgress>,
+) -> Vec<TextSection> {
     let mut sections = Vec::new();
-	let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_word.len());
+    let phrase_index = ::rand::thread_rng().gen_range(0..game_progress.customers.random_word.len());
 
-	sections.push(TextSection {
-		value: game_progress.customers.random_word[phrase_index].beginning.clone(),
-		style: TextStyle {
-			font: asset_server.load("FiraMono-Medium.ttf"),
-			font_size: 50.0,
-			color: Color::BLACK,
-		},
-	});
+    sections.push(TextSection {
+        value: game_progress.customers.random_word[phrase_index].0.clone(),
+        style: TextStyle {
+            font: asset_server.load("FiraMono-Medium.ttf"),
+            font_size: 50.0,
+            color: Color::BLACK,
+        },
+    });
 
     for character in word.chars() {
         sections.push(TextSection {
@@ -431,23 +432,23 @@ fn create_phrase_sections(word: &str, asset_server: Res<AssetServer>, game_progr
         })
     }
 
-	sections.push(TextSection {
-		value: game_progress.customers.random_word[phrase_index].end.clone(),
-		style: TextStyle {
-			font: asset_server.load("FiraMono-Medium.ttf"),
-			font_size: 50.0,
-			color: Color::BLACK,
-		},
-	});
+    sections.push(TextSection {
+        value: game_progress.customers.random_word[phrase_index].1.clone(),
+        style: TextStyle {
+            font: asset_server.load("FiraMono-Medium.ttf"),
+            font_size: 50.0,
+            color: Color::BLACK,
+        },
+    });
 
-	sections.push(TextSection {
-		value: "".to_string(),
-		style: TextStyle {
-			font: asset_server.load("FiraMono-Medium.ttf"),
-			font_size: 50.0,
-			color: Color::BLACK,
-		},
-	});
+    sections.push(TextSection {
+        value: "".to_string(),
+        style: TextStyle {
+            font: asset_server.load("FiraMono-Medium.ttf"),
+            font_size: 50.0,
+            color: Color::BLACK,
+        },
+    });
 
     sections
 }
@@ -463,140 +464,178 @@ fn text_input(
     if !query.is_empty() {
         let (id, mut word, mut text) = query.single_mut();
 
-		if word.marked_to_despawn {
-			if word.despawn_timer.elapsed().as_millis() > 1000 {
-				commands.entity(id).despawn();
+        if word.marked_to_despawn {
+            if word.despawn_timer.elapsed().as_millis() > 1000 {
+                commands.entity(id).despawn();
                 finish_day(game_progress, workdaytimer, app_state);
-			}
-			return;
-		}
+            }
+            return;
+        }
 
+        match word.minigame {
+            MiniGame::RANDOM_WORD | MiniGame::RANDOM_WORD_DISAPPEAR => {
+                for ev in char_evr.iter() {
+                    if word.index < word.word.len()
+                        && ev.char != ' '
+                        && !(ev.char == 'w' && word.index == 0)
+                    {
+                        if word.index == 0 {
+                            word.timer = Instant::now();
+                            word.started = true;
+                            if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
+                                disappear_letters(&word, &mut text, &game_progress);
+                            }
+                        }
+                        if word.word.as_bytes()[word.index] == ev.char as u8
+                            || if_letter_locked(
+                                &game_progress,
+                                word.word.as_bytes()[word.index] as char,
+                            )
+                        {
+                            text.sections[word.index + 1].style.color = Color::DARK_GREEN;
+                        } else {
+                            word.errors += 1;
+                            text.sections[word.index + 1].style.color = Color::RED;
+                        }
+                        word.index += 1;
 
-		match word.minigame {
-			MiniGame::RANDOM_WORD | MiniGame::RANDOM_WORD_DISAPPEAR => {
-				for ev in char_evr.iter() {
-					if word.index < word.word.len()
-						&& ev.char != ' '
-						&& !(ev.char == 'w' && word.index == 0)
-					{
-						if word.index == 0 {
-							word.timer = Instant::now();
-							word.started = true;
-							if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
-								disappear_letters(&word, &mut text, &game_progress);
-							}
-						}
-						if word.word.as_bytes()[word.index] == ev.char as u8
-							|| if_letter_locked(&game_progress, word.word.as_bytes()[word.index] as char)
-						{
-							text.sections[word.index + 1].style.color = Color::DARK_GREEN;
-						} else {
-							word.errors += 1;
-							text.sections[word.index + 1].style.color = Color::RED;
-						}
-						word.index += 1;
+                        let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
 
-						let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
+                        if word.index == word.word.len() {
+                            if word.errors <= 0 + game_progress.modes[0].1 as usize
+                                && word.timer.elapsed().as_millis()
+                                    < word.word.len() as u128 * 300 - game_progress.day as u128 * 15
+                                        + mode_offset
+                            {
+                                text.sections[word.index + 2].style.color = Color::DARK_GREEN;
+                                text.sections[word.index + 2].value = format!(
+                                    " Perfect! Your reward is {} Botcoins.",
+                                    word.index
+                                        * 2
+                                        * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
+                                            word.index
+                                        } else {
+                                            1
+                                        }
+                                );
+                                game_progress.money += word.index
+                                    * 2
+                                    * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
+                                        word.index
+                                    } else {
+                                        1
+                                    };
+                            } else if word.errors > 1 + game_progress.modes[0].1 as usize
+                                || word.timer.elapsed().as_millis()
+                                    > word.word.len() as u128 * 600 - game_progress.day as u128 * 30
+                                        + mode_offset
+                            {
+                                text.sections[word.index + 2].style.color = Color::RED;
+                                text.sections[word.index + 2].value =
+                                    format!(" Awful! Your reward is 0 Botcoins.");
+                            } else {
+                                text.sections[word.index + 2].style.color = Color::YELLOW_GREEN;
+                                text.sections[word.index + 2].value = format!(
+                                    " Fine. Your reward is {} Botcoins.",
+                                    word.index
+                                        * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
+                                            2
+                                        } else {
+                                            1
+                                        }
+                                );
+                                game_progress.money += word.index
+                                    * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {
+                                        2
+                                    } else {
+                                        1
+                                    };
+                            }
+                            word.marked_to_despawn = true;
+                            word.despawn_timer = Instant::now();
+                            word.started = false;
+                        }
+                    }
+                }
+            }
+            MiniGame::RANDOM_LETTERS => {
+                for ev in char_evr.iter() {
+                    if ev.char as u8 == word.word.as_bytes()[word.index].to_ascii_lowercase() {
+                        text.sections[word.index].style.color = Color::DARK_GREEN;
+                    } else {
+                        text.sections[word.index].style.color = Color::RED;
+                        word.errors += 1;
+                    }
 
-						if word.index == word.word.len() {
-							if word.errors <= 0 + game_progress.modes[0].1 as usize
-								&& word.timer.elapsed().as_millis()
-									< word.word.len() as u128 * 300 - game_progress.day as u128 * 15
-										+ mode_offset
-							{
-								text.sections[word.index + 2].style.color = Color::DARK_GREEN;
-								text.sections[word.index + 2].value = format!(" Perfect! Your reward is {} Botcoins.", word.index * 2 * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {word.index} else {1});
-								game_progress.money += word.index * 2 * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {word.index} else {1};
-							} else if word.errors > 1 + game_progress.modes[0].1 as usize
-								|| word.timer.elapsed().as_millis()
-									> word.word.len() as u128 * 600 - game_progress.day as u128 * 30
-										+ mode_offset
-							{
-								text.sections[word.index + 2].style.color = Color::RED;
-								text.sections[word.index + 2].value = format!(" Awful! Your reward is 0 Botcoins.");
-							} else {
-								text.sections[word.index + 2].style.color = Color::YELLOW_GREEN;
-								text.sections[word.index + 2].value = format!(" Fine. Your reward is {} Botcoins.", word.index * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {2} else {1});
-								game_progress.money += word.index * if let MiniGame::RANDOM_WORD_DISAPPEAR = word.minigame {2} else {1};
-							}
-							word.marked_to_despawn = true;
-							word.despawn_timer = Instant::now();
-							word.started = false;
-						}
-					}
-				}
-			},
-			MiniGame::RANDOM_LETTERS => {
-				for ev in char_evr.iter() {
-					if ev.char as u8 == word.word.as_bytes()[word.index].to_ascii_lowercase(){
-						text.sections[word.index].style.color = Color::DARK_GREEN;
-					}
-					else {
-						text.sections[word.index].style.color = Color::RED;
-						word.errors += 1;
-					}
+                    if word.typed == 0 {
+                        word.timer = Instant::now();
+                        word.started = true;
+                    }
 
-					if word.typed == 0 {
-						word.timer = Instant::now();
-						word.started = true;
-					}
+                    text.sections[word.index].style.font_size = 50.0;
+                    word.index = get_target_letter(&word.word);
+                    text.sections[word.index].style.font_size = 70.0;
+                    word.typed += 1;
+                    text.sections[word.index].style.color = if word.letters == word.typed {
+                        Color::GRAY
+                    } else {
+                        Color::BLUE
+                    };
 
-					text.sections[word.index].style.font_size = 50.0;
-					word.index = get_target_letter(&word.word);
-					text.sections[word.index].style.font_size = 70.0;
-					word.typed += 1;
-					text.sections[word.index].style.color = if word.letters == word.typed {Color::GRAY} else {Color::BLUE};
+                    let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
 
-					let mode_offset: u128 = if game_progress.modes[1].1 { 500 } else { 0 };
-
-					if word.letters == word.typed {
-						if word.errors <= 0 + game_progress.modes[0].1 as usize
-							&& word.timer.elapsed().as_millis()
-								< word.letters as u128 * 600 - game_progress.day as u128 * 15
-									+ mode_offset
-						{
-							text.sections[word.word.len()].style.color = Color::DARK_GREEN;
-							text.sections[word.word.len()].value = format!(" Perfect! Your reward is {} Botcoins.", word.letters * word.letters * 2);
-							game_progress.money += word.letters * word.letters;
-						} else if word.errors > 1 + game_progress.modes[0].1 as usize
-							|| word.timer.elapsed().as_millis()
-								> word.letters as u128 * 1200 - game_progress.day as u128 * 30
-									+ mode_offset
-						{
-							text.sections[word.word.len()].style.color = Color::RED;
-							text.sections[word.word.len()].value = format!(" Awful! Your reward is 0 Botcoins.");
-						} else {
-							text.sections[word.word.len()].style.color = Color::YELLOW_GREEN;
-							text.sections[word.word.len()].value = format!(" Fine. Your reward is {} Botcoins.", word.letters);
-							game_progress.money += word.letters;
-						}
-						word.marked_to_despawn = true;
-						word.started = false;
-						word.despawn_timer = Instant::now();
-					}
-				}
-			},
-		_ => (),
-		}
+                    if word.letters == word.typed {
+                        if word.errors <= 0 + game_progress.modes[0].1 as usize
+                            && word.timer.elapsed().as_millis()
+                                < word.letters as u128 * 600 - game_progress.day as u128 * 15
+                                    + mode_offset
+                        {
+                            text.sections[word.word.len()].style.color = Color::DARK_GREEN;
+                            text.sections[word.word.len()].value = format!(
+                                " Perfect! Your reward is {} Botcoins.",
+                                word.letters * word.letters * 2
+                            );
+                            game_progress.money += word.letters * word.letters;
+                        } else if word.errors > 1 + game_progress.modes[0].1 as usize
+                            || word.timer.elapsed().as_millis()
+                                > word.letters as u128 * 1200 - game_progress.day as u128 * 30
+                                    + mode_offset
+                        {
+                            text.sections[word.word.len()].style.color = Color::RED;
+                            text.sections[word.word.len()].value =
+                                format!(" Awful! Your reward is 0 Botcoins.");
+                        } else {
+                            text.sections[word.word.len()].style.color = Color::YELLOW_GREEN;
+                            text.sections[word.word.len()].value =
+                                format!(" Fine. Your reward is {} Botcoins.", word.letters);
+                            game_progress.money += word.letters;
+                        }
+                        word.marked_to_despawn = true;
+                        word.started = false;
+                        word.despawn_timer = Instant::now();
+                    }
+                }
+            }
+            _ => (),
+        }
     }
 }
 
-fn disappear_letters(word: &Mut<Word>, text: &mut Mut<Text>, game_progress: &ResMut<GameProgress>)
-{
-	for index in (word.index + 1..=word.word.len()) {
-		text.sections[index].style.color = Color::rgb(0.9, 0.9, 0.9);
-	}
+fn disappear_letters(word: &Mut<Word>, text: &mut Mut<Text>, game_progress: &ResMut<GameProgress>) {
+    for index in (word.index + 1..=word.word.len()) {
+        text.sections[index].style.color = Color::rgb(0.9, 0.9, 0.9);
+    }
 }
 
-fn letter_interpolation(mut query: Query<(&mut Text, &Word)>, game_progress: Res<GameProgress>,) {
-	if !query.is_empty() {
-		let (mut text, word) = query.single_mut();
-		if let MiniGame::RANDOM_LETTERS = word.minigame {
-			if word.started && text.sections[word.index].style.font_size > 50.0 {
-				text.sections[word.index].style.font_size -= 0.1;
-			}
-		}
-	}
+fn letter_interpolation(mut query: Query<(&mut Text, &Word)>, game_progress: Res<GameProgress>) {
+    if !query.is_empty() {
+        let (mut text, word) = query.single_mut();
+        if let MiniGame::RANDOM_LETTERS = word.minigame {
+            if word.started && text.sections[word.index].style.font_size > 50.0 {
+                text.sections[word.index].style.font_size -= 0.1;
+            }
+        }
+    }
 }
 
 fn correct_redness(
@@ -610,9 +649,9 @@ fn correct_redness(
     let redness: Vec<Entity> = redness.iter().collect();
     if !word.is_empty() {
         let word = word.single();
-		if word.marked_to_despawn {
-			return;
-		}
+        if word.marked_to_despawn {
+            return;
+        }
         let redness_level = (word.timer.elapsed().as_millis()
             / ((word.word.len() as u128 * 600 - game_progress.day as u128 * 30 + mode_offset) / 10))
             as usize;

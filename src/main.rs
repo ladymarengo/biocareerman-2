@@ -29,7 +29,7 @@ pub enum AppState {
 }
 
 pub struct Customers {
-	random_word: Vec<info::CallCenterTask>,
+	random_word: Vec<(String, String)>,
 	random_letter: Vec<String>,
 }
 
@@ -80,8 +80,7 @@ fn main() {
             max_days: 15,
             library: info::Library {
                 letters: Vec::new(),
-                min_len: Vec::new(),
-                max_len: Vec::new(),
+                len: Vec::new(),
                 news: Vec::new(),
             },
             modes: Vec::new(),
