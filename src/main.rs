@@ -8,10 +8,10 @@ mod hud;
 mod info;
 mod jobs_list;
 mod modes;
-mod randomizer;
 mod start;
 mod work;
 mod loading;
+mod minigames;
 
 const WIDTH: f32 =  1600.0;
 const HEIGHT: f32 = 1200.0;

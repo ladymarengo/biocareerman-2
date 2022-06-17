@@ -1,5 +1,4 @@
 use super::*;
-use info::*;
 use loading::*;
 
 #[derive(Component)]
@@ -23,8 +22,6 @@ impl Plugin for Start {
 
 fn spawn_start(
     mut commands: Commands,
-    assets: Res<AssetServer>,
-    game_progress: ResMut<GameProgress>,
     load_assets: Res<LoadedAssets>,
 	load_fonts: Res<LoadedFonts>,
 ) {

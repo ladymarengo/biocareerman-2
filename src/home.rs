@@ -21,7 +21,6 @@ impl Plugin for Home {
 
 fn spawn_home(
     mut commands: Commands,
-    assets: Res<AssetServer>,
     game_progress: Res<GameProgress>,
     load_assets: Res<LoadedAssets>,
 	load_fonts: Res<LoadedFonts>,

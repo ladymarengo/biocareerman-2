@@ -1,5 +1,4 @@
 - refactoring
-- put text assets into txt files
 - implement logging system
 - research user behavior
 - balance money
