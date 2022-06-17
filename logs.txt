@@ -1,0 +1,4 @@
+sort by length
+minigames with different lengths were done with average speed and average amount of errors
+timer for optimal playtime -> game_progress
+which day did the player stop

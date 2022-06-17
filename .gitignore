@@ -1,3 +1,4 @@
 /target
 /dist
 .DS*
+logs/log*.log

@@ -1,5 +1,5 @@
 use super::*;
-use crate::minigames::{letters::*, words::*};
+use crate::{minigames::{letters::*, words::*}, logging::LogBook};
 use bevy::math::Rect;
 use info::*;
 use loading::*;
@@ -38,6 +38,7 @@ pub struct Word {
     pub typed: usize,
 }
 
+#[derive(Copy, Clone)]
 pub enum MiniGame {
     RandomWord,
     RandomLetters,
@@ -253,6 +254,7 @@ fn text_input(
     game_progress: ResMut<GameProgress>,
     app_state: ResMut<State<AppState>>,
     workdaytimer: Res<WorkDayTimer>,
+	logbook: ResMut<LogBook>,
 ) {
     if !query.is_empty() {
         let (id, word, _text) = query.single_mut();
@@ -267,9 +269,9 @@ fn text_input(
 
         match word.minigame {
             MiniGame::RandomWord | MiniGame::RandomWordDisappear => {
-                input_words(char_evr, query, game_progress)
+                input_words(char_evr, query, game_progress, logbook)
             }
-            MiniGame::RandomLetters => input_letters(char_evr, query, game_progress),
+            MiniGame::RandomLetters => input_letters(char_evr, query, game_progress, logbook),
             _ => (),
         }
     }

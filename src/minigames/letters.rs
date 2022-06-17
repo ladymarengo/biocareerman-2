@@ -1,4 +1,5 @@
 use crate::info::*;
+use crate::logging::*;
 use crate::work::*;
 use crate::*;
 use ::rand::Rng;
@@ -90,6 +91,7 @@ pub fn input_letters(
     mut char_evr: EventReader<ReceivedCharacter>,
     mut query: Query<(Entity, &mut Word, &mut Text)>,
     mut game_progress: ResMut<GameProgress>,
+	mut logbook: ResMut<LogBook>,
 ) {
     let (_id, mut word, mut text) = query.single_mut();
 
@@ -142,6 +144,7 @@ pub fn input_letters(
                     format!(" Fine. Your reward is {} Botcoins.", word.letters);
                 game_progress.money += word.letters;
             }
+			log_task(&mut logbook, word.minigame, word.letters, word.timer.elapsed().as_millis(), word.errors, game_progress.day);
             word.marked_to_despawn = true;
             word.started = false;
             word.despawn_timer = Instant::now();

@@ -12,7 +12,8 @@ impl Plugin for Home {
         app.add_system_set(
             SystemSet::on_enter(AppState::Home)
                 .with_system(spawn_home)
-                .with_system(hud::spawn_hud),
+                .with_system(hud::spawn_hud)
+				.with_system(logging::add_logging),
         )
         .add_system_set(SystemSet::on_update(AppState::Home).with_system(home_input))
         .add_system_set(SystemSet::on_exit(AppState::Home).with_system(cleanup_home));

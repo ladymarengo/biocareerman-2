@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use bevy::{core::FixedTimestep, prelude::*, text::Text2dBounds};
+use bevy::{core::FixedTimestep, prelude::*, text::Text2dBounds, app::AppExit};
+use logging::save_to_file;
 
 mod ending;
 mod home;
@@ -12,6 +13,7 @@ mod start;
 mod work;
 mod loading;
 mod minigames;
+mod logging;
 
 const WIDTH: f32 =  1600.0;
 const HEIGHT: f32 = 1200.0;
@@ -49,7 +51,8 @@ fn main() {
         .add_plugin(ending::Ending)
         .add_plugin(start::Start)
 		.add_plugin(loading::Loading)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        //.add_system(bevy::input::system::exit_on_esc_system)
+		.add_system(exit_system)
         .insert_resource(loading::LoadedAssets(HashMap::new()))
         .insert_resource(loading::LoadedFonts(HashMap::new()))
         .insert_resource(loading::AssetsLoading(Vec::new()))
@@ -63,4 +66,10 @@ fn main() {
 fn spawn_cameras(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
+}
+fn exit_system(keys: Res<Input<KeyCode>>, mut exit: EventWriter<AppExit>) {
+	if keys.just_pressed(KeyCode::Escape) {
+		save_to_file();
+        exit.send(AppExit);
+	}
 }

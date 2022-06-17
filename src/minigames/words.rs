@@ -4,6 +4,7 @@ use instant::Instant;
 use std::cmp::min;
 
 use crate::info::*;
+use crate::logging::*;
 use crate::work::*;
 use crate::*;
 
@@ -146,6 +147,7 @@ pub fn input_words(
     mut char_evr: EventReader<ReceivedCharacter>,
     mut query: Query<(Entity, &mut Word, &mut Text)>,
     mut game_progress: ResMut<GameProgress>,
+	mut logbook: ResMut<LogBook>,
 ) {
     let (_id, mut word, mut text) = query.single_mut();
 
@@ -220,6 +222,7 @@ pub fn input_words(
                             1
                         };
                 }
+				log_task(&mut logbook, word.minigame, word.word.len(), word.timer.elapsed().as_millis(), word.errors, game_progress.day);
                 word.marked_to_despawn = true;
                 word.despawn_timer = Instant::now();
                 word.started = false;
