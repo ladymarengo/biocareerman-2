@@ -1,4 +1,5 @@
 use super::*;
+use info::*;
 
 pub struct Modes;
 

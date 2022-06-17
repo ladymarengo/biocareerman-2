@@ -1,6 +1,8 @@
 use std::{cmp::min, usize};
 
 use super::*;
+use info::*;
+use loading::*;
 use crate::randomizer::get_random_word;
 use bevy::math::Rect;
 

@@ -1,4 +1,5 @@
 use super::*;
+use info::*;
 
 #[derive(Component)]
 pub struct HudMarker;

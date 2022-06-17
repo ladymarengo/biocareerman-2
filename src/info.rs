@@ -2,8 +2,8 @@ use std::fs::read_to_string;
 
 use super::*;
 
-pub fn create_library(mut game_progress: ResMut<GameProgress>) {
-    game_progress.library.letters = read_to_string("assets/text/characters.txt")
+pub fn create_library(mut commands: Commands) {
+    let letters: Vec<Vec<char>> = read_to_string("assets/text/characters.txt")
         .unwrap()
         .split('\n')
         .map(|s| {
@@ -13,7 +13,7 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
         })
         .collect();
 
-    game_progress.library.len = read_to_string("assets/text/lengths.txt")
+	let len: Vec<Length> = read_to_string("assets/text/lengths.txt")
         .unwrap()
         .split('\n')
         .map(|s| {
@@ -25,17 +25,18 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
         })
         .collect();
 
-    game_progress.library.news = read_to_string("assets/text/news.txt")
+	let news: Vec<String> = read_to_string("assets/text/news.txt")
         .unwrap()
         .split('\n')
         .map(|s| s.to_string())
         .collect();
 
-    game_progress.money = 1000;
-    game_progress.humanness = 100;
-    game_progress.day = 1;
+    let money: usize = 1000;
+    let humanness: i32 = 100;
+    let day: usize = 1;
+	let max_days: usize = 15;
 
-    game_progress.modes = read_to_string("assets/text/modes.txt")
+    let modes: Vec<(info::Mode, bool)> = read_to_string("assets/text/modes.txt")
         .unwrap()
         .split("\n\n")
         .map(|s| {
@@ -52,7 +53,7 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
         })
         .collect();
 
-    game_progress.customers.random_word = read_to_string("assets/text/minigame_words.txt")
+    let random_word: Vec<(String, String)> = read_to_string("assets/text/minigame_words.txt")
         .unwrap()
         .split('\n')
         .map(|s| {
@@ -61,11 +62,24 @@ pub fn create_library(mut game_progress: ResMut<GameProgress>) {
         })
         .collect();
 
-    game_progress.customers.random_letter = read_to_string("assets/text/minigame_letters.txt")
+    let random_letter: Vec<String> = read_to_string("assets/text/minigame_letters.txt")
         .unwrap()
         .split('\n')
         .map(|s| s.to_string())
         .collect();
+
+	commands.insert_resource(GameProgress {money, humanness, day, max_days, library: Library { letters, len, news}, modes, customers: Customers { random_word, random_letter}})
+}
+
+
+pub struct GameProgress {
+    pub money: usize,
+    pub humanness: i32,
+    pub day: usize,
+    pub max_days: usize,
+    pub library: info::Library,
+    pub modes: Vec<(info::Mode, bool)>,
+    pub customers: info::Customers,
 }
 
 pub struct Library {
@@ -87,6 +101,6 @@ pub struct Mode {
 }
 
 pub struct Customers {
-	random_word: Vec<(String, String)>,
-	random_letter: Vec<String>,
+	pub random_word: Vec<(String, String)>,
+	pub random_letter: Vec<String>,
 }

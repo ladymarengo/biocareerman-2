@@ -1,4 +1,6 @@
 use super::*;
+use info::*;
+use loading::*;
 
 #[derive(Component)]
 pub struct StartMarker;
@@ -26,7 +28,6 @@ fn spawn_start(
     load_assets: Res<LoadedAssets>,
 	load_fonts: Res<LoadedFonts>,
 ) {
-    info::create_library(game_progress);
 
     commands
         .spawn_bundle(SpriteBundle {

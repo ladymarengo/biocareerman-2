@@ -1,4 +1,6 @@
 use super::*;
+use info::*;
+use loading::*;
 
 pub struct Home;
 
