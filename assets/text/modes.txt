@@ -1,0 +1,29 @@
+Cyborg I
+200
+Eagle-eyed employee has a right for one error without a penalty.
+-10
+
+Smiley
+200
+Additional time for your tasks.
+-10
+
+Bcrrmn2
+400
+Type any button for a vowel.
+-40
+
+No Time To Type
+200
+Limit the length of your tasks.
+-30
+
+Writetyper's starterkit
+150
+Type any button for the letters 'q' and 'e'.
+-10
+
+Bot Remover 2000
+600
+Restores some of your humanness.
+25
