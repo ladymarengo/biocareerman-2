@@ -85,3 +85,8 @@ pub struct Mode {
     pub desc: String,
     pub humanness_impact: i32,
 }
+
+pub struct Customers {
+	random_word: Vec<(String, String)>,
+	random_letter: Vec<String>,
+}

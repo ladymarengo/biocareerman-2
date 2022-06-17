@@ -28,10 +28,6 @@ pub enum AppState {
     Ending,
 }
 
-pub struct Customers {
-	random_word: Vec<(String, String)>,
-	random_letter: Vec<String>,
-}
 
 pub struct GameProgress {
     money: usize,
@@ -40,7 +36,7 @@ pub struct GameProgress {
     max_days: usize,
     library: info::Library,
     modes: Vec<(info::Mode, bool)>,
-    customers: Customers,
+    customers: info::Customers,
 }
 
 pub struct LoadedAssets(HashMap<String, Handle<Image>>);
@@ -84,7 +80,7 @@ fn main() {
                 news: Vec::new(),
             },
             modes: Vec::new(),
-            customers: Customers {
+            customers: info::Customers {
 				random_word: Vec::new(),
 				random_letter: Vec::new(),
 			},
